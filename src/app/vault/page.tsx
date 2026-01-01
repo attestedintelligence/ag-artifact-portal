@@ -387,7 +387,6 @@ export default function VaultPage() {
                     data={artifact}
                     onVerify={() => console.log('Verify:', artifact.artifactId)}
                     onShare={() => console.log('Share:', artifact.artifactId)}
-                    onDownloadBundle={() => console.log('Download:', artifact.artifactId)}
                     className={viewMode === 'list' ? 'max-w-full' : ''}
                   />
                 </motion.div>

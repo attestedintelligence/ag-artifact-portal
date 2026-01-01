@@ -29,7 +29,10 @@ import {
   CheckCircle2,
   Loader2,
   Users,
+  Download,
+  Share2,
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 // ============================================================================
 // TYPES
@@ -301,25 +304,61 @@ export default function CreatePage() {
     setSealedHash(null);
   }, []);
 
+  // Sealed artifact result
+  const [sealedArtifact, setSealedArtifact] = useState<{
+    artifactId: string;
+    vaultId: string;
+    verifyUrl: string;
+  } | null>(null);
+
   // Handle seal
   const handleSeal = useCallback(async () => {
-    if (!fileHash || !sealedHash) return;
+    if (!fileHash || !sealedHash || !metadataHash) return;
 
     setIsSealing(true);
     setSealError(null);
 
     try {
-      // TODO: Call API to create policy artifact
-      // For now, simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch('/api/seal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: details.name,
+          description: details.description,
+          bytesHash: fileHash.bytes_hash,
+          metadataHash,
+          sealedHash,
+          fileSize: fileHash.metadata.size,
+          mimeType: fileHash.metadata.type,
+          settings: {
+            measurementCadenceMs: runtime.measurementCadenceMs,
+            ttlSeconds: runtime.ttlSeconds,
+            enforcementAction: runtime.enforcementAction,
+            payloadIncluded: includePayload,
+          },
+        }),
+      });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create seal');
+      }
+
+      setSealedArtifact({
+        artifactId: data.data.artifactId,
+        vaultId: data.data.vaultId,
+        verifyUrl: data.data.verifyUrl,
+      });
       setSealSuccess(true);
     } catch (err) {
       setSealError(err instanceof Error ? err.message : 'Failed to create seal');
     } finally {
       setIsSealing(false);
     }
-  }, [fileHash, sealedHash]);
+  }, [fileHash, sealedHash, metadataHash, details, runtime, includePayload]);
 
   // Attestation handlers
   const handleAddAttestor = useCallback(async (email: string, role: AttestorRole) => {
@@ -580,18 +619,58 @@ export default function CreatePage() {
                     <h2 className="text-xl font-semibold mb-2 text-emerald-400">
                       Artifact Sealed
                     </h2>
-                    <p className="text-sm text-muted-foreground mb-8">
+                    <p className="text-sm text-muted-foreground mb-6">
                       Your artifact has been cryptographically sealed and is ready for use.
                     </p>
 
-                    <div className="p-4 rounded-lg bg-muted/50 border border-border mb-6 inline-block">
-                      <p className="text-xs text-muted-foreground mb-1">Sealed Hash</p>
-                      <code className="text-sm font-mono text-primary">{sealedHash}</code>
+                    {/* QR Code Section */}
+                    {sealedArtifact && (
+                      <div className="glass-card p-6 mb-6 inline-block">
+                        <div className="bg-white p-4 rounded-lg mb-4">
+                          <QRCodeSVG
+                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}${sealedArtifact.verifyUrl}`}
+                            size={180}
+                            level="H"
+                            includeMargin={true}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2">Vault ID</p>
+                        <code className="text-sm font-mono text-primary block mb-3">
+                          {sealedArtifact.vaultId}
+                        </code>
+                        <p className="text-xs text-muted-foreground mb-2">Artifact ID</p>
+                        <code className="text-sm font-mono text-primary block mb-3">
+                          {sealedArtifact.artifactId}
+                        </code>
+                        <p className="text-xs text-muted-foreground mb-2">Sealed Hash</p>
+                        <code className="text-xs font-mono text-primary block break-all">
+                          {sealedHash}
+                        </code>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 justify-center flex-wrap mb-6">
+                      <Button variant="outline" size="sm">
+                        <Download className="w-4 h-4 mr-2" />
+                        Save Card
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </Button>
+                      {sealedArtifact && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={sealedArtifact.verifyUrl}>
+                            Verify
+                          </Link>
+                        </Button>
+                      )}
                     </div>
 
                     <div className="flex gap-4 justify-center">
                       <Button variant="outline" asChild>
-                        <Link href="/">View Dashboard</Link>
+                        <Link href="/vault">View Vault</Link>
                       </Button>
                       <Button
                         onClick={() => {
@@ -604,6 +683,7 @@ export default function CreatePage() {
                           setMetadataHash(null);
                           setSealedHash(null);
                           setSealSuccess(false);
+                          setSealedArtifact(null);
                         }}
                       >
                         Create Another

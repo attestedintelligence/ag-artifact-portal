@@ -7,7 +7,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================================
@@ -19,16 +21,61 @@ model User {
   email     String   @unique
   username  String?  @unique
   vaultId   String   @unique @map("vault_id") // Format: XXXX-XXXXX-XXXX
+  tier      UserTier @default(FREE)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  artifacts   Artifact[]
-  signingKeys SigningKey[]
-  vaultCards  VaultCard[]
+  artifacts       Artifact[]
+  signingKeys     SigningKey[]
+  vaultCards      VaultCard[]
+  sessions        Session[]
+  magicLinkTokens MagicLinkToken[]
 
   @@map("users")
+}
+
+enum UserTier {
+  FREE
+  PREMIUM
+  ENTERPRISE
+}
+
+// ============================================================================
+// SESSIONS (for magic link auth)
+// ============================================================================
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique @db.VarChar(64)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ============================================================================
+// MAGIC LINK TOKENS (passwordless auth)
+// ============================================================================
+
+model MagicLinkToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique @db.VarChar(64)
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("magic_link_tokens")
 }
 
 // ============================================================================

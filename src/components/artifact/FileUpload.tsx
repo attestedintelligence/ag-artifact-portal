@@ -91,6 +91,24 @@ export function FileUpload({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { isHashing, progress, result, error, hashFile, reset } = useFileHash();
 
+  // Process file - defined first so it can be used in other callbacks
+  const processFile = useCallback(async (file: File) => {
+    if (file.size > maxSizeBytes) {
+      // Handle oversized file
+      return;
+    }
+
+    setSelectedFile(file);
+    reset();
+
+    try {
+      const hashResult = await hashFile(file);
+      onHashComplete(hashResult);
+    } catch (err) {
+      console.error('Hash error:', err);
+    }
+  }, [maxSizeBytes, reset, hashFile, onHashComplete]);
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -114,7 +132,7 @@ export function FileUpload({
     if (files.length > 0) {
       await processFile(files[0]);
     }
-  }, [disabled]);
+  }, [disabled, processFile]);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -123,30 +141,13 @@ export function FileUpload({
     }
     // Reset input so same file can be selected again
     e.target.value = '';
-  }, []);
+  }, [processFile]);
 
-  const processFile = async (file: File) => {
-    if (file.size > maxSizeBytes) {
-      // Handle oversized file
-      return;
-    }
-
-    setSelectedFile(file);
-    reset();
-
-    try {
-      const hashResult = await hashFile(file);
-      onHashComplete(hashResult);
-    } catch (err) {
-      console.error('Hash error:', err);
-    }
-  };
-
-  const handleRemove = () => {
+  const handleRemove = useCallback(() => {
     setSelectedFile(null);
     reset();
     onFileRemove?.();
-  };
+  }, [reset, onFileRemove]);
 
   const FileIcon = selectedFile ? getFileIcon(selectedFile.type) : Upload;
 

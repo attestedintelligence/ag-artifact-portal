@@ -64,7 +64,6 @@ export interface VaultCardData {
 interface VaultCardProps {
   data: VaultCardData;
   onVerify?: () => void;
-  onDownloadBundle?: () => void;
   onShare?: () => void;
   className?: string;
 }
@@ -139,7 +138,6 @@ function QRCodePlaceholder({ sealedHash: _sealedHash }: { sealedHash: string }) 
 export function VaultCard({
   data,
   onVerify,
-  _onDownloadBundle,
   onShare,
   className,
 }: VaultCardProps) {

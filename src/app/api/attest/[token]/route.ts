@@ -211,15 +211,3 @@ export async function POST(
   }
 }
 
-// ============================================================================
-// HELPER: Create attestation request (called from invite API)
-// ============================================================================
-
-export function createAttestationRequest(data: Omit<AttestationRecord, 'status'>): string {
-  const record: AttestationRecord = {
-    ...data,
-    status: 'pending',
-  };
-  attestationStore.set(data.token, record);
-  return data.token;
-}
