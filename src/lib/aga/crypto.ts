@@ -21,9 +21,18 @@ import type {
   KeyType,
 } from './types';
 
-// Configure Ed25519 to use sha512 - use type assertion for compatibility
-(ed25519.etc as { sha512Sync?: (...m: Uint8Array[]) => Uint8Array }).sha512Sync =
-  (...m: Uint8Array[]) => sha512(ed25519.etc.concatBytes(...m));
+// Configure Ed25519 to use sha512 - required for sync operations
+// See: https://github.com/paulmillr/noble-ed25519#usage
+// Type assertion needed as sha512Sync is dynamically added
+const ed25519Etc = ed25519.etc as typeof ed25519.etc & {
+  sha512Sync?: (...m: Uint8Array[]) => Uint8Array;
+};
+if (typeof ed25519Etc.sha512Sync !== 'function') {
+  ed25519Etc.sha512Sync = (...m: Uint8Array[]) => {
+    const concat = ed25519.etc.concatBytes(...m);
+    return sha512(concat);
+  };
+}
 
 // ============================================================================
 // CONSTANTS
