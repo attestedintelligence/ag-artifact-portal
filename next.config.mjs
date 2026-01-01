@@ -139,8 +139,8 @@ const nextConfig = {
   // OUTPUT CONFIGURATION
   // ============================================================================
 
-  // Standalone output for smaller deployments
-  output: 'standalone',
+  // Note: 'standalone' output is for Docker deployments
+  // Vercel handles output automatically - do not set 'output' for Vercel
 
   // ============================================================================
   // WEBPACK OPTIMIZATIONS

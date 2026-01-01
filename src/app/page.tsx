@@ -1,10 +1,9 @@
 'use client';
 
 /**
- * Landing Page
- * AGA Portal - Attested Governance Artifacts
- *
- * Kinetic Cyber aesthetic with Signal Cyan accent
+ * Landing Page - AGA Portal
+ * Attested Governance Artifacts Platform
+ * Version: 1.0.1 - Production Build
  */
 
 import Link from 'next/link';
