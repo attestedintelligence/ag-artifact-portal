@@ -7,7 +7,7 @@
  */
 
 import * as ed from '@noble/ed25519';
-import { sha256 } from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha2';
 import { hkdf } from '@noble/hashes/hkdf';
 import { DOMAIN_SEPARATORS, type DomainSeparator, type SigningKey, type Signer } from '../types';
 import { sha256 as sha256Async, bufferToHex, hexToBuffer } from './hash';
