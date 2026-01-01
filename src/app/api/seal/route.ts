@@ -10,11 +10,22 @@ import { prisma } from '@/lib/db';
 import { authenticateRequest } from '@/lib/auth';
 import { v4 as uuid } from 'uuid';
 
-// Import from @attested/core
+// Import from AGA library
 import {
-  generateFullKeyPair,
-  canonicalize,
-} from '@attested/core';
+  generateKeyPair,
+  computeBytesHash,
+  generateSalt,
+  computeSealedHash,
+  canonicalStringify,
+  generateUUID,
+  getCurrentTimestamp,
+  exportPublicKey,
+  computeKeyId,
+} from '@/lib/aga/crypto';
+import { KeyType, EnforcementAction } from '@/lib/aga/types';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 // ============================================================================
 // TYPES
@@ -106,32 +117,31 @@ export async function POST(request: NextRequest) {
     let signingKey = await prisma.signingKey.findFirst({
       where: {
         userId: user.id,
-        keyClass: 'BUNDLE',
+        keyClass: 'POLICY_ISSUER',
         revokedAt: null,
       },
     });
 
     if (!signingKey) {
-      // Generate new key pair
-      const keyPair = await generateFullKeyPair('BUNDLE');
+      // Generate new key pair using AGA library
+      const keyPair = await generateKeyPair(KeyType.POLICY_ISSUER);
 
       signingKey = await prisma.signingKey.create({
         data: {
-          id: keyPair.keyIdHash,
+          id: keyPair.keyId,
           userId: user.id,
-          publicKeyB64: keyPair.publicKeyB64,
-          keyClass: 'BUNDLE',
+          publicKeyB64: exportPublicKey(keyPair.publicKey),
+          keyClass: 'POLICY_ISSUER',
         },
       });
-
-      // Store private key securely (in production, use encrypted storage)
-      // For MVP, we'll store it in the database encrypted
-      // Note: In production, use HSM or KMS
     }
 
     // Generate artifact ID and run ID
     const artifactId = generateArtifactId();
     const runId = generateRunId();
+
+    // Generate salt for this artifact
+    const salt = generateSalt();
 
     // Create timestamps
     const now = new Date();
@@ -142,59 +152,51 @@ export async function POST(request: NextRequest) {
       : null;
     const expiresAt = notAfter ? new Date(notAfter) : null;
 
+    // Build subject identifier
+    const subjectIdentifier = {
+      bytesHash: body.bytesHash,
+      metadataHash: body.metadataHash,
+    };
+
     // Build policy artifact for signing
     const policyArtifactData = {
-      schema_version: '1.0',
-      protocol_version: '1.0',
-      policy_version: 1,
-      vault_id: user.vaultId,
-      artifact_id: artifactId,
-      issued_at: issuedAt,
-      not_before: notBefore,
-      not_after: notAfter,
-      subject_identifier: {
-        bytes_hash: body.bytesHash,
-        metadata_hash: body.metadataHash,
+      schemaVersion: '1.0.0',
+      protocolVersion: '1.0.0',
+      policyVersion: 1,
+      vaultId: user.vaultId,
+      artifactId,
+      issuedAt,
+      notBefore,
+      notAfter,
+      subjectIdentifier,
+      sealedHash: body.sealedHash,
+      salt,
+      integrityPolicy: {
+        configDigest: body.metadataHash,
+        configSource: 'CONFIG_SOURCE_C',
       },
-      sealed_hash: body.sealedHash,
-      integrity_policy: {
-        config_digest: body.metadataHash,
-        config_source: 'CONFIG_SOURCE_C',
+      enforcementPolicy: {
+        onDrift: body.settings.enforcementAction === 'ALERT' ? 'CONTINUE' : body.settings.enforcementAction,
+        onTtlExpired: 'KILL',
+        onSignatureInvalid: 'KILL',
       },
-      enforcement_policy: {
-        on_drift: body.settings.enforcementAction === 'ALERT' ? 'CONTINUE' : body.settings.enforcementAction,
-        on_ttl_expired: 'KILL',
-        on_signature_invalid: 'KILL',
-      },
-      key_schedule: [
+      keySchedule: [
         {
-          key_id: signingKey.id,
-          public_key: signingKey.publicKeyB64,
-          created_at: signingKey.createdAt.toISOString(),
+          keyId: signingKey.id,
+          publicKey: signingKey.publicKeyB64,
+          createdAt: signingKey.createdAt.toISOString(),
         },
       ],
-      disclosure_policy: {
-        payload_included: body.settings.payloadIncluded,
-        claims: ['name', 'bytes_hash', 'metadata_hash', 'sealed_hash'],
+      disclosurePolicy: {
+        payloadIncluded: body.settings.payloadIncluded,
+        claims: ['name', 'bytesHash', 'metadataHash', 'sealedHash'],
       },
       attestations: [],
     };
 
-    // Compute policy hash (without issuer signature)
-    const policyCanonical = canonicalize(policyArtifactData);
-    const policyHashBytes = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(policyCanonical)
-    );
-    const policyHash = Array.from(new Uint8Array(policyHashBytes))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    // For MVP, we sign with platform key
-    // In production, user would have their own key
-    // We'll generate a signature using the signObject helper
-    // Note: For MVP without stored private keys, we'll use a placeholder signature
-    // In production, retrieve encrypted private key and sign properly
+    // Compute policy hash using AGA crypto
+    const policyCanonical = canonicalStringify(policyArtifactData);
+    const policyHash = computeBytesHash(new TextEncoder().encode(policyCanonical));
 
     // Create artifact in database
     const artifact = await prisma.artifact.create({
@@ -206,6 +208,7 @@ export async function POST(request: NextRequest) {
         bytesHash: body.bytesHash,
         metadataHash: body.metadataHash,
         sealedHash: body.sealedHash,
+        salt,
         policyVersion: 1,
         policyHash,
         status: 'ACTIVE',
@@ -217,41 +220,36 @@ export async function POST(request: NextRequest) {
         enforcementAction: body.settings.enforcementAction,
         payloadIncluded: body.settings.payloadIncluded,
         signingKeyId: signingKey.id,
+        issuerIdentifier: user.vaultId,
       },
     });
 
     // Create genesis receipt
     const genesisReceiptData = {
-      receipt_v: '1',
-      run_id: runId,
-      sequence_number: 1,
+      receiptVersion: '1',
+      runId,
+      sequenceNumber: 1,
       timestamp: issuedAt,
-      local_time: issuedAt,
-      monotonic_counter: 1,
-      time_source: 'DEGRADED_LOCAL',
-      event_type: 'POLICY_LOADED',
+      localTime: issuedAt,
+      monotonicCounter: 1,
+      timeSource: 'DEGRADED_LOCAL',
+      eventType: 'POLICY_LOADED',
       decision: {
         action: 'NONE',
-        reason_code: 'OK',
+        reasonCode: 'OK',
         details: 'Policy artifact sealed and loaded',
       },
       policy: {
-        policy_id: policyHash,
+        policyId: policyHash,
       },
       chain: {
-        prev_receipt_hash: '0'.repeat(64),
+        prevReceiptHash: '0'.repeat(64),
       },
     };
 
-    // Compute receipt hash
-    const receiptCanonical = canonicalize(genesisReceiptData);
-    const receiptHashBytes = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(receiptCanonical)
-    );
-    const receiptHash = Array.from(new Uint8Array(receiptHashBytes))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    // Compute receipt hash using AGA crypto
+    const receiptCanonical = canonicalStringify(genesisReceiptData);
+    const receiptHash = computeBytesHash(new TextEncoder().encode(receiptCanonical));
 
     // Store receipt
     await prisma.receipt.create({
@@ -302,6 +300,7 @@ export async function POST(request: NextRequest) {
         bytesHash: body.bytesHash,
         metadataHash: body.metadataHash,
         sealedHash: body.sealedHash,
+        salt,
         policyHash,
         status: 'ACTIVE',
         issuedAt,

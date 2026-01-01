@@ -43,7 +43,7 @@ interface EmailResult {
 // ============================================================================
 
 const TEMPLATE_SUBJECTS: Record<EmailTemplate, string> = {
-  vault_created: 'Welcome to Sovereign Vault - Your Vault is Ready',
+  vault_created: 'Welcome to AGA Portal - Your Account is Ready',
   artifact_sealed: 'Artifact Sealed Successfully',
   artifact_expiring: 'Artifact Expiration Warning',
   artifact_expired: 'Artifact Has Expired',
@@ -51,7 +51,7 @@ const TEMPLATE_SUBJECTS: Record<EmailTemplate, string> = {
   attestation_requested: 'Third-Party Attestation Requested',
   attestation_completed: 'Attestation Review Complete',
   verification_failed: 'Verification Alert',
-  magic_link: 'Sign in to Sovereign Vault',
+  magic_link: 'Sign in to AGA Portal',
 };
 
 // ============================================================================
@@ -66,7 +66,7 @@ export class EmailService {
   constructor() {
     this.apiKey = process.env.RESEND_API_KEY || '';
     this.fromAddress = process.env.EMAIL_FROM || 'noreply@attestedgovernance.com';
-    this.fromName = process.env.EMAIL_FROM_NAME || 'Sovereign Vault';
+    this.fromName = process.env.EMAIL_FROM_NAME || 'Attested Intelligence';
   }
 
   /**
@@ -210,10 +210,10 @@ export class EmailService {
     const templates: Record<EmailTemplate, string> = {
       vault_created: `
         <div class="content">
-          <h1>Welcome to Sovereign Vault</h1>
-          <p>Your vault has been created successfully.</p>
+          <h1>Welcome to AGA Portal</h1>
+          <p>Your account has been created successfully.</p>
           <p><strong>Vault ID:</strong> <span class="code">${variables.vaultId}</span></p>
-          <p>You can now start sealing artifacts and creating tamper-proof records.</p>
+          <p>You can now start creating Attested Governance Artifacts.</p>
           <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/vault" class="button">Open Your Vault</a></p>
         </div>
       `,
@@ -286,7 +286,7 @@ export class EmailService {
       `,
       magic_link: `
         <div class="content">
-          <h1>Sign In to Sovereign Vault</h1>
+          <h1>Sign In to AGA Portal</h1>
           <p>Click the button below to sign in to your account.</p>
           <p><a href="${variables.magicLink}" class="button">Sign In</a></p>
           <p style="font-size: 12px; color: #6B7280;">This link will expire in 15 minutes. If you didn't request this, you can safely ignore this email.</p>
@@ -304,7 +304,7 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">Sovereign Vault</div>
+              <div class="logo">AGA Portal</div>
             </div>
             ${templates[template]}
             <div class="footer">

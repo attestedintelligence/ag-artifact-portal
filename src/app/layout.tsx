@@ -23,25 +23,25 @@ const geistMono = localFont({
 // Optimized metadata
 export const metadata: Metadata = {
   title: {
-    default: "Sovereign Vault | Attested Intelligence",
-    template: "%s | Sovereign Vault",
+    default: "AGA Portal | Attested Intelligence",
+    template: "%s | AGA Portal",
   },
-  description: "Cryptographic attestation platform for creating tamper-evident seals and verifiable evidence bundles.",
-  keywords: ["attestation", "cryptographic", "seal", "verification", "evidence", "governance"],
+  description: "Attested Governance Artifacts - Cryptographic attestation platform for creating tamper-evident policy artifacts and verifiable evidence bundles.",
+  keywords: ["attestation", "governance", "artifacts", "cryptographic", "verification", "evidence", "policy", "compliance"],
   authors: [{ name: "Attested Intelligence" }],
   creator: "Attested Intelligence",
-  metadataBase: new URL("https://ag-artifact-portal.vercel.app"),
+  metadataBase: new URL("https://attestedintelligence.com"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Sovereign Vault",
-    title: "Sovereign Vault | Attested Intelligence",
-    description: "Cryptographic attestation platform for creating tamper-evident seals.",
+    siteName: "AGA Portal",
+    title: "AGA Portal | Attested Intelligence",
+    description: "Attested Governance Artifacts - The Integrity Layer for Autonomous Defense.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sovereign Vault | Attested Intelligence",
-    description: "Cryptographic attestation platform for creating tamper-evident seals.",
+    title: "AGA Portal | Attested Intelligence",
+    description: "Attested Governance Artifacts - The Integrity Layer for Autonomous Defense.",
   },
   robots: {
     index: true,

@@ -17,11 +17,11 @@ datasource db {
 // ============================================================================
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  username  String?  @unique
-  vaultId   String   @unique @map("vault_id") // Format: XXXX-XXXXX-XXXX
-  tier      UserTier @default(FREE)
+  id       String   @id @default(uuid())
+  email    String   @unique
+  username String?  @unique
+  vaultId  String   @unique @map("vault_id") // Format: XXXX-XXXXX-XXXX
+  tier     UserTier @default(FREE)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -65,12 +65,12 @@ model Session {
 // ============================================================================
 
 model MagicLinkToken {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  token     String   @unique @db.VarChar(64)
-  expiresAt DateTime @map("expires_at")
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  token     String    @unique @db.VarChar(64)
+  expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -87,16 +87,17 @@ model Artifact {
   userId String @map("user_id")
 
   // Identity
-  name        String @db.VarChar(255)
+  name        String  @db.VarChar(255)
   description String?
 
   // Cryptographic binding
-  bytesHash    String @map("bytes_hash") @db.VarChar(64)    // SHA-256 hex
+  bytesHash    String @map("bytes_hash") @db.VarChar(64) // SHA-256 hex
   metadataHash String @map("metadata_hash") @db.VarChar(64) // SHA-256 hex
-  sealedHash   String @map("sealed_hash") @db.VarChar(64)   // Combined sealed hash
+  sealedHash   String @map("sealed_hash") @db.VarChar(64) // Combined sealed hash
 
-  // Policy
-  policyVersion Int @default(1) @map("policy_version")
+  // Policy reference
+  policyId      String? @map("policy_id")
+  policyVersion Int     @default(1) @map("policy_version")
   policyHash    String? @map("policy_hash") @db.VarChar(64)
 
   // Lifecycle
@@ -118,23 +119,34 @@ model Artifact {
   signingKeyId String @map("signing_key_id") @db.VarChar(64)
 
   // Arweave anchoring
-  arweaveTxId       String?       @map("arweave_tx_id") @db.VarChar(64)
+  arweaveTxId         String?       @map("arweave_tx_id") @db.VarChar(64)
   arweaveAnchorStatus AnchorStatus? @map("arweave_anchor_status")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // Additional AGA spec fields
+  salt               String? @db.VarChar(32) // 128-bit salt (hex)
+  evidenceCommitment String? @map("evidence_commitment") @db.VarChar(64)
+  issuerIdentifier   String? @map("issuer_identifier") @db.VarChar(64)
+
+  // Disclosure policy (JSON)
+  disclosurePolicy Json? @map("disclosure_policy")
+
   // Relations
-  user               User                @relation(fields: [userId], references: [id])
-  receipts           Receipt[]
-  attestationInvites AttestationInvite[]
+  user                User                 @relation(fields: [userId], references: [id])
+  policy              Policy?              @relation(fields: [policyId], references: [id])
+  receipts            Receipt[]
+  attestationInvites  AttestationInvite[]
   arweaveTransactions ArweaveTransaction[]
-  vaultCard          VaultCard?
+  vaultCard           VaultCard?
+  runs                GoverneRun[]
 
   @@index([userId])
   @@index([status])
   @@index([sealedHash])
+  @@index([policyId])
   @@map("artifacts")
 }
 
@@ -157,6 +169,119 @@ enum AnchorStatus {
   PENDING
   CONFIRMED
   FAILED
+}
+
+// ============================================================================
+// POLICIES (governance rules)
+// ============================================================================
+
+model Policy {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+
+  // Identity
+  policyName    String @map("policy_name") @db.VarChar(255)
+  policyVersion Int    @default(1) @map("policy_version")
+  policyHash    String @map("policy_hash") @db.VarChar(64) // Content-addressable hash
+
+  // Rules (JSON)
+  policyRules                Json @map("policy_rules")
+  permittedClaimTypes        Json @map("permitted_claim_types")
+  substitutionRules          Json @map("substitution_rules")
+  sensitivityClassifications Json @map("sensitivity_classifications")
+  measurementRequirements    Json @map("measurement_requirements")
+  enforcementActionsMapping  Json @map("enforcement_actions_mapping")
+
+  // Signature
+  signatureB64 String @map("signature_b64")
+  signingKeyId String @map("signing_key_id") @db.VarChar(64)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  artifacts Artifact[]
+
+  @@unique([userId, policyName, policyVersion])
+  @@index([userId])
+  @@index([policyHash])
+  @@map("policies")
+}
+
+// ============================================================================
+// GOVERNED RUNS (execution instances)
+// ============================================================================
+
+model GoverneRun {
+  id         String @id @default(uuid())
+  artifactId String @map("artifact_id")
+
+  // Identity
+  runId String @unique @map("run_id") @db.VarChar(64)
+
+  // State
+  status RunStatus @default(RUNNING)
+
+  // Timing
+  startedAt DateTime  @default(now()) @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+
+  // Chain head tracking
+  receiptCount       Int     @default(0) @map("receipt_count")
+  headSequenceNumber Int     @default(0) @map("head_sequence_number")
+  headReceiptHash    String? @map("head_receipt_hash") @db.VarChar(64)
+
+  // Relations
+  artifact    Artifact           @relation(fields: [artifactId], references: [id])
+  checkpoints CheckpointRecord[]
+
+  @@index([artifactId])
+  @@map("governed_runs")
+}
+
+enum RunStatus {
+  RUNNING
+  ENDED
+  TERMINATED
+  FAILED
+}
+
+// ============================================================================
+// CHECKPOINT RECORDS (Merkle anchoring)
+// ============================================================================
+
+model CheckpointRecord {
+  id    String @id @default(uuid())
+  runId String @map("run_id")
+
+  // Range
+  startSequence Int @map("start_sequence")
+  endSequence   Int @map("end_sequence")
+  eventCount    Int @map("event_count")
+
+  // Merkle
+  merkleRoot String @map("merkle_root") @db.VarChar(64)
+
+  // Anchor proof
+  anchorNetworkId     String?   @map("anchor_network_id") @db.VarChar(32)
+  anchorTxId          String?   @map("anchor_tx_id") @db.VarChar(64)
+  anchorBlockNumber   Int?      @map("anchor_block_number")
+  anchorBlockHash     String?   @map("anchor_block_hash") @db.VarChar(64)
+  anchorTimestamp     DateTime? @map("anchor_timestamp")
+  anchorConfirmations Int       @default(0) @map("anchor_confirmations")
+
+  // Signature
+  signatureB64 String @map("signature_b64")
+  signingKeyId String @map("signing_key_id") @db.VarChar(64)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  run GoverneRun @relation(fields: [runId], references: [runId])
+
+  @@index([runId])
+  @@map("checkpoint_records")
 }
 
 // ============================================================================
@@ -187,8 +312,10 @@ model SigningKey {
 }
 
 enum KeyClass {
-  BUNDLE
-  RELEASE
+  POLICY_ISSUER
+  ENFORCEMENT
+  CHAIN
+  CHECKPOINT
 }
 
 // ============================================================================
@@ -250,8 +377,8 @@ model AttestationInvite {
   id         String @id @default(uuid())
   artifactId String @map("artifact_id")
 
-  token String @unique @db.VarChar(64) // URL-safe token
-  email String? @db.VarChar(255)       // Optional email for invite
+  token String  @unique @db.VarChar(64) // URL-safe token
+  email String? @db.VarChar(255) // Optional email for invite
 
   role AttestorRole
 
@@ -335,9 +462,9 @@ model VaultCard {
   artifactId String @unique @map("artifact_id")
 
   // Display data (snapshot at creation)
-  displayName String   @map("display_name") @db.VarChar(255)
-  createdAt   DateTime @map("created_at")
-  expiresAt   DateTime? @map("expires_at")
+  displayName String         @map("display_name") @db.VarChar(255)
+  createdAt   DateTime       @map("created_at")
+  expiresAt   DateTime?      @map("expires_at")
   status      ArtifactStatus
 
   // Settings snapshot (not live data)
@@ -365,8 +492,8 @@ model ActionRecord {
   artifactId String @map("artifact_id")
   runId      String @map("run_id")
 
-  actionType  EnforcementAction @map("action_type")
-  reasonCode  String            @map("reason_code") @db.VarChar(64)
+  actionType EnforcementAction @map("action_type")
+  reasonCode String            @map("reason_code") @db.VarChar(64)
 
   receiptHash String @map("receipt_hash") @db.VarChar(64)
 

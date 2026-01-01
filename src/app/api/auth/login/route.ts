@@ -113,11 +113,11 @@ export async function POST(request: NextRequest) {
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
             <div style="text-align: center; margin-bottom: 40px;">
               <h1 style="color: #0A0E17; font-size: 24px; margin: 0;">Attested Intelligence</h1>
-              <p style="color: #666; font-size: 14px; margin-top: 8px;">Sovereign Vault</p>
+              <p style="color: #666; font-size: 14px; margin-top: 8px;">Attested Governance Artifacts</p>
             </div>
 
             <div style="background: linear-gradient(135deg, #0A0E17 0%, #1a1f2e 100%); border-radius: 12px; padding: 32px; text-align: center;">
-              <h2 style="color: #fff; font-size: 20px; margin: 0 0 16px 0;">Sign in to your Vault</h2>
+              <h2 style="color: #fff; font-size: 20px; margin: 0 0 16px 0;">Sign in to AGA Portal</h2>
               <p style="color: #aaa; font-size: 14px; margin: 0 0 24px 0;">Click the button below to securely access your account.</p>
               <a href="${magicLink}" style="display: inline-block; background: #00D4FF; color: #0A0E17; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px;">
                 Sign In Securely

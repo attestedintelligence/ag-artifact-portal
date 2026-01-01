@@ -47,6 +47,7 @@ PHASE 4: VERIFICATION
 # PHASE 1: ARTIFACT CREATION
 
 ## 1.1 Web Interface Components
+remove any refrence to soveringn vault   this is an attested governance artifact portal - Attested Governance Artifacts #AGA (Policy/Compliance - Artifact/Object)  please align with that terminology   
 
 ### Subject Input Form
 ```

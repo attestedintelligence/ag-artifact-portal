@@ -89,7 +89,7 @@ function LoginForm() {
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold mb-2">Sign in to Sovereign Vault</h1>
+          <h1 className="text-2xl font-bold mb-2">Sign in to AGA Portal</h1>
           <p className="text-sm text-muted-foreground">
             Enter your email to receive a magic link
           </p>
