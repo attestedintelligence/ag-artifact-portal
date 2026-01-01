@@ -7,8 +7,8 @@
  */
 
 import * as ed from '@noble/ed25519';
-import { sha256 } from '@noble/hashes/sha2';
-import { hkdf } from '@noble/hashes/hkdf';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { hkdf } from '@noble/hashes/hkdf.js';
 import { DOMAIN_SEPARATORS, type DomainSeparator, type SigningKey, type Signer } from '../types';
 import { sha256 as sha256Async, bufferToHex, hexToBuffer } from './hash';
 import { canonicalize, canonicalizeWithOmit } from './canonical';

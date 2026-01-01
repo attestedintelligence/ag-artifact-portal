@@ -6,9 +6,9 @@
  */
 
 import * as ed from '@noble/ed25519';
-import { sha256 } from '@noble/hashes/sha2';
-import { pbkdf2Async } from '@noble/hashes/pbkdf2';
-import { randomBytes } from '@noble/hashes/utils';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
+import { randomBytes } from '@noble/hashes/utils.js';
 import { bytesToBase64, base64ToBytes, bytesToBase64url, base64urlToBytes } from './signature';
 import { sha256 as sha256Async, bufferToHex } from './hash';
 import type { KeyClass } from '../types';
