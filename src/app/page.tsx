@@ -3,7 +3,8 @@
 /**
  * Landing Page - AGA Portal
  * Attested Governance Artifacts Platform
- * Version: 1.0.1 - Production Build
+ * Version: 1.0.2 - Production Build
+ * Build: 2026-01-01T00:00:00Z
  */
 
 import Link from 'next/link';
