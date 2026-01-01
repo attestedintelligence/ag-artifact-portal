@@ -66,9 +66,21 @@ function generateRunId(): string {
 // ============================================================================
 
 export async function POST(request: NextRequest) {
-  const authResult = await authenticateRequest(request);
+  console.log('[SEAL] Starting seal request');
+
+  let authResult;
+  try {
+    authResult = await authenticateRequest(request);
+  } catch (authError) {
+    console.error('[SEAL] Auth error:', authError);
+    return NextResponse.json(
+      { error: 'Authentication error', code: 'AUTH_ERROR' },
+      { status: 500 }
+    );
+  }
 
   if (!authResult.success) {
+    console.log('[SEAL] Auth failed:', authResult.error);
     return NextResponse.json(
       { error: authResult.error, code: 'AUTH_REQUIRED' },
       { status: authResult.status }
@@ -76,9 +88,11 @@ export async function POST(request: NextRequest) {
   }
 
   const user = authResult.user;
+  console.log('[SEAL] Authenticated user:', user.id);
 
   try {
     const body = await request.json() as SealRequest;
+    console.log('[SEAL] Request body received:', { name: body.name, bytesHashLen: body.bytesHash?.length });
 
     // Validation
     if (!body.name?.trim()) {
@@ -110,6 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create signing key for user
+    console.log('[SEAL] Looking for signing key...');
     let signingKey = await prisma.signingKey.findFirst({
       where: {
         userId: user.id,
@@ -117,10 +132,13 @@ export async function POST(request: NextRequest) {
         revokedAt: null,
       },
     });
+    console.log('[SEAL] Existing signing key:', signingKey?.id || 'none');
 
     if (!signingKey) {
       // Generate new key pair using AGA library
+      console.log('[SEAL] Generating new key pair...');
       const keyPair = await generateKeyPair(KeyType.POLICY_ISSUER);
+      console.log('[SEAL] Key pair generated:', keyPair.keyId);
 
       signingKey = await prisma.signingKey.create({
         data: {
@@ -130,6 +148,7 @@ export async function POST(request: NextRequest) {
           keyClass: 'POLICY_ISSUER',
         },
       });
+      console.log('[SEAL] Signing key created:', signingKey.id);
     }
 
     // Generate artifact ID and run ID
@@ -191,10 +210,13 @@ export async function POST(request: NextRequest) {
     };
 
     // Compute policy hash using AGA crypto
+    console.log('[SEAL] Computing policy hash...');
     const policyCanonical = canonicalStringify(policyArtifactData);
     const policyHash = computeBytesHash(new TextEncoder().encode(policyCanonical));
+    console.log('[SEAL] Policy hash computed:', policyHash.substring(0, 16) + '...');
 
     // Create artifact in database
+    console.log('[SEAL] Creating artifact in database...');
     const artifact = await prisma.artifact.create({
       data: {
         id: uuid(),
@@ -219,6 +241,7 @@ export async function POST(request: NextRequest) {
         issuerIdentifier: user.vaultId,
       },
     });
+    console.log('[SEAL] Artifact created:', artifact.id);
 
     // Create genesis receipt
     const genesisReceiptData = {
@@ -244,10 +267,13 @@ export async function POST(request: NextRequest) {
     };
 
     // Compute receipt hash using AGA crypto
+    console.log('[SEAL] Computing receipt hash...');
     const receiptCanonical = canonicalStringify(genesisReceiptData);
     const receiptHash = computeBytesHash(new TextEncoder().encode(receiptCanonical));
+    console.log('[SEAL] Receipt hash computed');
 
     // Store receipt
+    console.log('[SEAL] Creating receipt in database...');
     await prisma.receipt.create({
       data: {
         id: uuid(),
