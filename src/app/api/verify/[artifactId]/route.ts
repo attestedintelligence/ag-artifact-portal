@@ -8,8 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { computeBytesHash, canonicalStringify, constantTimeEqual } from '@/lib/aga/crypto';
-import { verifyReceiptChain } from '@/lib/aga/receipts';
+import { constantTimeEqual } from '@/lib/aga/crypto';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';

@@ -3,10 +3,9 @@
  * Per Evolution Spec v1.0 - Steps 1-13
  */
 
-import { sha256 } from '@noble/hashes/sha256';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
+import { sha256, sha512 } from '@noble/hashes/sha2.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import * as ed25519 from '@noble/ed25519';
-import { sha512 } from '@noble/hashes/sha512';
 import type {
   SubjectMetadata,
   SubjectIdentifier,
@@ -16,7 +15,6 @@ import type {
   EnforcementParameters,
   DisclosurePolicy,
   AttestationResult,
-  Policy,
   EnforcementReceipt,
   ChainEvent,
   KeyPair,
@@ -46,7 +44,7 @@ export const SALT_LENGTH = 32; // 128 bits = 16 bytes = 32 hex chars
  */
 export function normalizeSubject(
   rawSubject: Uint8Array,
-  subjectType: SubjectType
+  _subjectType: SubjectType
 ): NormalizationResult {
   const warnings: string[] = [];
 

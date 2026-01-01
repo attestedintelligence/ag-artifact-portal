@@ -163,7 +163,7 @@ export async function createArtifact(
  */
 function evaluateAttestation(
   subjectIdentifier: SubjectIdentifier,
-  policyId: string
+  _policyId: string
 ): AttestationResult {
   // Default attestation passes (placeholder for full rule evaluation)
   return {

@@ -3,8 +3,7 @@
  * Per Evolution Spec v1.0 - Steps 26-33
  */
 
-import { sha256 } from '@noble/hashes/sha256';
-import { bytesToHex } from '@noble/hashes/utils';
+import { sha256 } from '@noble/hashes/sha2.js';
 import * as ed25519 from '@noble/ed25519';
 import {
   canonicalStringify,

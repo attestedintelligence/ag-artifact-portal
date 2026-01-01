@@ -3,7 +3,7 @@
  * Per Evolution Spec v1.0 - Verifier Output Contract
  */
 
-import { sha256 } from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha2.js';
 import * as ed25519 from '@noble/ed25519';
 import {
   canonicalStringify,
@@ -12,7 +12,7 @@ import {
   importPublicKey,
   getCurrentTimestamp,
 } from './crypto';
-import { verifyReceiptChain, computeReceiptHash, computeReceiptLeafHash } from './receipts';
+import { verifyReceiptChain, computeReceiptLeafHash } from './receipts';
 import type {
   EvidenceBundle,
   PolicyArtifact,
@@ -21,7 +21,6 @@ import type {
   InclusionProof,
   VerificationResult,
   VerificationCheck,
-  BundleVerificationResult,
 } from './types';
 
 // ============================================================================
