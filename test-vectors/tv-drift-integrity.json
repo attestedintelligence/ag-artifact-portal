@@ -1,0 +1,64 @@
+{
+  "id": "TV-DRIFT-INTEGRITY",
+  "description": "Integrity drift detection test vectors",
+  "vectors": [
+    {
+      "name": "image_digest_mismatch",
+      "baseline": {
+        "container_image_digest": "sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2"
+      },
+      "observed": {
+        "container_image_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "expected": {
+        "drift_detected": true,
+        "reason_code": "DRIFT_INTEGRITY",
+        "details": "container_image_digest mismatch"
+      }
+    },
+    {
+      "name": "config_digest_mismatch",
+      "baseline": {
+        "config_digest": "sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2"
+      },
+      "observed": {
+        "config_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": {
+        "drift_detected": true,
+        "reason_code": "DRIFT_INTEGRITY",
+        "details": "config_digest mismatch"
+      }
+    },
+    {
+      "name": "sbom_digest_mismatch",
+      "baseline": {
+        "sbom_digest": "sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2"
+      },
+      "observed": {
+        "sbom_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "expected": {
+        "drift_detected": true,
+        "reason_code": "DRIFT_INTEGRITY",
+        "details": "sbom_digest mismatch"
+      }
+    },
+    {
+      "name": "all_match_no_drift",
+      "baseline": {
+        "container_image_digest": "sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2",
+        "config_digest": "sha256:b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3",
+        "sbom_digest": "sha256:c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4"
+      },
+      "observed": {
+        "container_image_digest": "sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2",
+        "config_digest": "sha256:b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3",
+        "sbom_digest": "sha256:c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4"
+      },
+      "expected": {
+        "drift_detected": false
+      }
+    }
+  ]
+}

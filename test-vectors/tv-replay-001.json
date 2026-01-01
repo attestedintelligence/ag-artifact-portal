@@ -1,0 +1,14 @@
+{
+  "id": "TV-RPY-001",
+  "description": "Replay protection - Accept first sequence number",
+  "input": {
+    "run_id": "run_01HXYZTEST0000000000000001",
+    "stream_id": "pressure_psi",
+    "sequence_number": 1,
+    "last_accepted_sequence_number": null
+  },
+  "expected": {
+    "accept": true,
+    "reason": "First message for (run_id, stream_id) pair"
+  }
+}

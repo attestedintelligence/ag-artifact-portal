@@ -1,0 +1,15 @@
+{
+  "name": "@aga/arweave",
+  "version": "1.0.0",
+  "description": "Arweave integration for Attested Governance Artifacts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

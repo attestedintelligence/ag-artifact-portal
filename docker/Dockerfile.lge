@@ -1,0 +1,58 @@
+# =============================================================================
+# Local Governance Engine (LGE) - Dockerfile
+# Per AGA Build Guide Phase 12
+# =============================================================================
+
+# Stage 1: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+COPY packages/runtime/package.json ./packages/runtime/
+COPY packages/core/package.json ./packages/core/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source
+COPY packages/runtime ./packages/runtime
+COPY packages/core ./packages/core
+
+# Build packages
+RUN npm run build -w packages/core
+RUN npm run build -w packages/runtime
+
+# Stage 2: Production
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Create non-root user
+RUN addgroup --system --gid 1001 lge
+RUN adduser --system --uid 1001 lge
+
+# Create directories
+RUN mkdir -p /var/lib/lge /var/log/lge
+RUN chown -R lge:lge /var/lib/lge /var/log/lge
+
+# Copy built packages
+COPY --from=builder /app/packages/runtime/dist ./packages/runtime/dist
+COPY --from=builder /app/packages/core/dist ./packages/core/dist
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy entrypoint
+COPY docker/lge-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/lge-entrypoint.sh
+
+USER lge
+
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/v1/status || exit 1
+
+ENTRYPOINT ["lge-entrypoint.sh"]
+CMD ["node", "packages/runtime/dist/index.js"]

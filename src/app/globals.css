@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Kinetic Cyber Theme
+ * Attested Intelligence / VerifiedBundle
+ *
+ * Primary: Void (#0A0E17), Signal Cyan (#00D4FF)
+ * Style: Glass morphism, military-grade minimal, dark UI
+ */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Glass morphism effects */
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg;
+  }
+
+  .glass-strong {
+    @apply bg-white/10 backdrop-blur-2xl border border-white/20;
+  }
+
+  /* Signal glow effects */
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+
+  .glow-cyan-strong {
+    box-shadow: 0 0 40px rgba(0, 212, 255, 0.5);
+  }
+
+  /* Text gradients */
+  .text-gradient-cyan {
+    @apply bg-gradient-to-r from-cyan-400 to-cyan-200 bg-clip-text text-transparent;
+  }
+
+  /* Hash/hex text styling */
+  .font-mono-hash {
+    @apply font-mono text-xs tracking-tight text-cyan-400/80;
+  }
+
+  /* Status indicators */
+  .status-active {
+    @apply inline-flex items-center gap-1.5 text-emerald-400;
+  }
+
+  .status-expired {
+    @apply inline-flex items-center gap-1.5 text-amber-400;
+  }
+
+  .status-terminated {
+    @apply inline-flex items-center gap-1.5 text-red-400;
+  }
+}
+
+@layer base {
+  :root {
+    /* Kinetic Cyber - Dark by default */
+    --background: 220 40% 5%;              /* Void: #0A0E17 */
+    --foreground: 210 20% 95%;             /* Near white */
+
+    --card: 220 35% 7%;                    /* Slightly lighter than bg */
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 35% 8%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 193 100% 50%;               /* Signal Cyan: #00D4FF */
+    --primary-foreground: 220 40% 5%;      /* Dark text on cyan */
+
+    --secondary: 220 30% 12%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 220 25% 15%;
+    --muted-foreground: 210 15% 55%;
+
+    --accent: 193 100% 50%;                /* Signal Cyan */
+    --accent-foreground: 220 40% 5%;
+
+    --destructive: 0 72% 51%;              /* Red for errors */
+    --destructive-foreground: 210 20% 95%;
+
+    --border: 220 20% 18%;
+    --input: 220 25% 12%;
+    --ring: 193 100% 50%;                  /* Cyan focus ring */
+
+    /* Status colors */
+    --success: 142 76% 46%;                /* Emerald */
+    --warning: 38 92% 50%;                 /* Amber */
+    --error: 0 72% 51%;                    /* Red */
+
+    /* Chart colors - Cyber palette */
+    --chart-1: 193 100% 50%;               /* Cyan */
+    --chart-2: 142 76% 46%;                /* Emerald */
+    --chart-3: 280 65% 60%;                /* Purple */
+    --chart-4: 38 92% 50%;                 /* Amber */
+    --chart-5: 0 72% 51%;                  /* Red */
+
+    --radius: 0.5rem;
+  }
+
+  /* Force dark mode - Kinetic Cyber is dark-only */
+  .dark {
+    --background: 220 40% 5%;
+    --foreground: 210 20% 95%;
+    --card: 220 35% 7%;
+    --card-foreground: 210 20% 95%;
+    --popover: 220 35% 8%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 193 100% 50%;
+    --primary-foreground: 220 40% 5%;
+    --secondary: 220 30% 12%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 220 25% 15%;
+    --muted-foreground: 210 15% 55%;
+    --accent: 193 100% 50%;
+    --accent-foreground: 220 40% 5%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 95%;
+    --border: 220 20% 18%;
+    --input: 220 25% 12%;
+    --ring: 193 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Force dark mode */
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Add subtle grid pattern for depth */
+    background-image:
+      linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Typography - Space Grotesk for headings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-semibold;
+  }
+
+  /* Monospace for hashes, keys, IDs */
+  code, .mono {
+    @apply font-mono text-sm;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-cyan-500/30;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+}
+
+/* Animation utilities for Framer Motion */
+@layer utilities {
+  .animate-in {
+    animation: animate-in 0.3s ease-out;
+  }
+
+  .animate-out {
+    animation: animate-out 0.2s ease-in;
+  }
+
+  @keyframes animate-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes animate-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  /* Pulse animation for status indicators */
+  .pulse-success {
+    animation: pulse-success 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-success {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Scan line effect for "military" aesthetic */
+  .scanline::before {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(
+      transparent 50%,
+      rgba(0, 212, 255, 0.02) 50%
+    );
+    background-size: 100% 4px;
+  }
+}

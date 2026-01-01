@@ -1,0 +1,17 @@
+{
+  "name": "@aga/runtime",
+  "version": "1.0.0",
+  "description": "Runtime engine for Attested Governance Artifacts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aga/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

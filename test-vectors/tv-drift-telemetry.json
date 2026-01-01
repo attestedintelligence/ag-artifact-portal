@@ -1,0 +1,95 @@
+{
+  "id": "TV-DRIFT-TELEMETRY",
+  "description": "Telemetry drift detection test vectors",
+  "vectors": [
+    {
+      "name": "range_drift_below_min",
+      "policy": {
+        "drift_rule": {
+          "type": "RANGE",
+          "min": 10,
+          "max": 100
+        }
+      },
+      "observed_value": 5,
+      "expected": {
+        "drift_detected": true,
+        "reason_code": "DRIFT_TELEMETRY",
+        "details": "value 5 below minimum 10"
+      }
+    },
+    {
+      "name": "range_drift_above_max",
+      "policy": {
+        "drift_rule": {
+          "type": "RANGE",
+          "min": 10,
+          "max": 100
+        }
+      },
+      "observed_value": 150,
+      "expected": {
+        "drift_detected": true,
+        "reason_code": "DRIFT_TELEMETRY",
+        "details": "value 150 above maximum 100"
+      }
+    },
+    {
+      "name": "range_within_bounds",
+      "policy": {
+        "drift_rule": {
+          "type": "RANGE",
+          "min": 10,
+          "max": 100
+        }
+      },
+      "observed_value": 50,
+      "expected": {
+        "drift_detected": false
+      }
+    },
+    {
+      "name": "threshold_exceeded",
+      "policy": {
+        "drift_rule": {
+          "type": "THRESHOLD",
+          "comparator": "LESS_THAN",
+          "value": 100
+        }
+      },
+      "observed_value": 150,
+      "expected": {
+        "drift_detected": true,
+        "reason_code": "DRIFT_TELEMETRY",
+        "details": "value 150 not less than threshold 100"
+      }
+    },
+    {
+      "name": "missing_data_beyond_tolerance",
+      "policy": {
+        "cadence_seconds": 60,
+        "missing_data_tolerance_seconds": 30
+      },
+      "last_measurement_at": "2025-01-01T00:00:00Z",
+      "current_time": "2025-01-01T00:02:00Z",
+      "expected": {
+        "event_type": "MISSING_DATA",
+        "minimum_action": "ALERT"
+      }
+    },
+    {
+      "name": "late_data_beyond_grace",
+      "policy": {
+        "late_data_policy": {
+          "grace_seconds": 10
+        }
+      },
+      "expected_time": "2025-01-01T00:01:00Z",
+      "measurement_time": "2025-01-01T00:01:20Z",
+      "expected": {
+        "event_type": "LATE_DATA",
+        "minimum_action": "ALERT"
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "TV-RPY-002",
+  "description": "Replay protection - Reject replayed sequence number",
+  "input": {
+    "run_id": "run_01HXYZTEST0000000000000001",
+    "stream_id": "pressure_psi",
+    "sequence_number": 1,
+    "last_accepted_sequence_number": 1
+  },
+  "expected": {
+    "accept": false,
+    "reason": "REPLAY_DETECTED",
+    "emit_event": "REPLAY_DETECTED",
+    "minimum_action": "ALERT"
+  }
+}

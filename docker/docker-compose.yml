@@ -1,0 +1,80 @@
+version: '3.8'
+
+# =============================================================================
+# Attested Governance - Local Deployment
+# Per AGA Build Guide Phase 12
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # Web Portal (Next.js)
+  # ===========================================================================
+  portal:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.portal
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    depends_on:
+      - lge
+    networks:
+      - ag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================================================
+  # Local Governance Engine (LGE)
+  # ===========================================================================
+  lge:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.lge
+    ports:
+      - "8080:8080"
+    volumes:
+      - lge-data:/var/lib/lge
+      - lge-ledger:/var/log/lge
+    environment:
+      - LGE_PORT=8080
+      - LGE_LOG_LEVEL=info
+      - LGE_LEDGER_PATH=/var/log/lge
+      - LGE_DATA_PATH=/var/lib/lge
+    networks:
+      - ag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ===========================================================================
+  # Offline Verifier (for testing)
+  # ===========================================================================
+  verifier:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.verifier
+    volumes:
+      - bundles:/bundles:ro
+    networks:
+      - ag-network
+    profiles:
+      - testing
+
+networks:
+  ag-network:
+    driver: bridge
+
+volumes:
+  lge-data:
+    driver: local
+  lge-ledger:
+    driver: local
+  bundles:
+    driver: local

@@ -1,0 +1,335 @@
+// Attested Governance Artifacts (AGA) Database Schema
+// Per AGA Build Guide Section 0.3
+// Using Prisma with Supabase PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// USERS (managed by Supabase Auth, this is for additional metadata)
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String?  @unique
+  vaultId   String   @unique @map("vault_id") // Format: XXXX-XXXXX-XXXX
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  artifacts   Artifact[]
+  signingKeys SigningKey[]
+  vaultCards  VaultCard[]
+
+  @@map("users")
+}
+
+// ============================================================================
+// ARTIFACTS (metadata only, not content)
+// ============================================================================
+
+model Artifact {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+
+  // Identity
+  name        String @db.VarChar(255)
+  description String?
+
+  // Cryptographic binding
+  bytesHash    String @map("bytes_hash") @db.VarChar(64)    // SHA-256 hex
+  metadataHash String @map("metadata_hash") @db.VarChar(64) // SHA-256 hex
+  sealedHash   String @map("sealed_hash") @db.VarChar(64)   // Combined sealed hash
+
+  // Policy
+  policyVersion Int @default(1) @map("policy_version")
+  policyHash    String? @map("policy_hash") @db.VarChar(64)
+
+  // Lifecycle
+  status      ArtifactStatus @default(DRAFT)
+  issuedAt    DateTime?      @map("issued_at")
+  effectiveAt DateTime?      @map("effective_at")
+  expiresAt   DateTime?      @map("expires_at")
+
+  // Runtime config
+  measurementCadenceMs Int               @default(60000) @map("measurement_cadence_ms")
+  ttlSeconds           Int?              @map("ttl_seconds")
+  enforcementAction    EnforcementAction @default(KILL) @map("enforcement_action")
+
+  // Payload handling
+  payloadIncluded   Boolean @default(false) @map("payload_included")
+  payloadStorageRef String? @map("payload_storage_ref") @db.VarChar(255)
+
+  // Keys
+  signingKeyId String @map("signing_key_id") @db.VarChar(64)
+
+  // Arweave anchoring
+  arweaveTxId       String?       @map("arweave_tx_id") @db.VarChar(64)
+  arweaveAnchorStatus AnchorStatus? @map("arweave_anchor_status")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user               User                @relation(fields: [userId], references: [id])
+  receipts           Receipt[]
+  attestationInvites AttestationInvite[]
+  arweaveTransactions ArweaveTransaction[]
+  vaultCard          VaultCard?
+
+  @@index([userId])
+  @@index([status])
+  @@index([sealedHash])
+  @@map("artifacts")
+}
+
+enum ArtifactStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+  REVOKED
+  EXPIRED
+  TERMINATED
+}
+
+enum EnforcementAction {
+  BLOCK_START
+  KILL
+  ALERT
+}
+
+enum AnchorStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+// ============================================================================
+// SIGNING KEYS (Ed25519)
+// ============================================================================
+
+model SigningKey {
+  id     String @id @db.VarChar(64) // Key ID
+  userId String @map("user_id")
+
+  publicKeyB64 String @map("public_key_b64") @db.VarChar(64) // Base64 public key
+
+  // Private key stored in encrypted form
+  encryptedPrivateKey String? @map("encrypted_private_key")
+  keyEncryptionSalt   String? @map("key_encryption_salt") @db.VarChar(64)
+
+  keyClass KeyClass @map("key_class")
+
+  createdAt        DateTime  @default(now()) @map("created_at")
+  revokedAt        DateTime? @map("revoked_at")
+  revocationReason String?   @map("revocation_reason") @db.VarChar(255)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("signing_keys")
+}
+
+enum KeyClass {
+  BUNDLE
+  RELEASE
+}
+
+// ============================================================================
+// RECEIPT CHAIN (append-only)
+// ============================================================================
+
+model Receipt {
+  id         String @id @default(uuid())
+  artifactId String @map("artifact_id")
+
+  // Chain linkage
+  sequenceNumber   Int     @map("sequence_number")
+  previousLeafHash String? @map("previous_leaf_hash") @db.VarChar(64) // NULL for genesis
+  leafHash         String  @map("leaf_hash") @db.VarChar(64)
+
+  // Event data
+  eventType ReceiptEventType @map("event_type")
+  eventId   String           @map("event_id")
+  timestamp DateTime
+
+  // Payload (JSON)
+  payload     Json
+  payloadHash String @map("payload_hash") @db.VarChar(64)
+
+  // Signature
+  signatureB64 String @map("signature_b64")
+  signingKeyId String @map("signing_key_id") @db.VarChar(64)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@unique([artifactId, sequenceNumber])
+  @@index([artifactId])
+  @@index([artifactId, sequenceNumber])
+  @@map("receipts")
+}
+
+enum ReceiptEventType {
+  POLICY_LOADED
+  RUN_STARTED
+  MEASUREMENT_OK
+  DRIFT_DETECTED
+  MISSING_DATA
+  LATE_DATA
+  ENFORCEMENT_ACTION
+  RUN_ENDED
+  CHECKPOINT
+  BUNDLE_EXPORTED
+  ATTESTATION
+}
+
+// ============================================================================
+// ATTESTATION INVITES
+// ============================================================================
+
+model AttestationInvite {
+  id         String @id @default(uuid())
+  artifactId String @map("artifact_id")
+
+  token String @unique @db.VarChar(64) // URL-safe token
+  email String? @db.VarChar(255)       // Optional email for invite
+
+  role AttestorRole
+
+  status InviteStatus @default(PENDING)
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  expiresAt  DateTime  @map("expires_at")
+  acceptedAt DateTime? @map("accepted_at")
+
+  // Attestation data (filled on acceptance)
+  attestorName         String? @map("attestor_name") @db.VarChar(255)
+  attestorSignatureB64 String? @map("attestor_signature_b64")
+  attestorPublicKeyB64 String? @map("attestor_public_key_b64") @db.VarChar(64)
+
+  // Relations
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@index([token])
+  @@map("attestation_invites")
+}
+
+enum AttestorRole {
+  WITNESS
+  AUDITOR
+  APPROVER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+// ============================================================================
+// ARWEAVE TRANSACTIONS
+// ============================================================================
+
+model ArweaveTransaction {
+  id         String  @id @default(uuid())
+  artifactId String? @map("artifact_id")
+
+  txId   String @map("tx_id") @db.VarChar(64)
+  txType TxType @map("tx_type")
+
+  dataHash      String @map("data_hash") @db.VarChar(64)
+  dataSizeBytes Int    @map("data_size_bytes")
+
+  status        TxStatus @default(PENDING)
+  confirmations Int      @default(0)
+
+  submittedAt DateTime? @map("submitted_at")
+  confirmedAt DateTime? @map("confirmed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  artifact Artifact? @relation(fields: [artifactId], references: [id])
+
+  @@map("arweave_transactions")
+}
+
+enum TxType {
+  ARTIFACT_SEAL
+  CHECKPOINT_ANCHOR
+}
+
+enum TxStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+}
+
+// ============================================================================
+// VAULT CARDS (lightweight artifact references for dashboard)
+// ============================================================================
+
+model VaultCard {
+  id         String @id @default(uuid())
+  userId     String @map("user_id")
+  artifactId String @unique @map("artifact_id")
+
+  // Display data (snapshot at creation)
+  displayName String   @map("display_name") @db.VarChar(255)
+  createdAt   DateTime @map("created_at")
+  expiresAt   DateTime? @map("expires_at")
+  status      ArtifactStatus
+
+  // Settings snapshot (not live data)
+  settingsSnapshot Json @map("settings_snapshot")
+
+  // Ordering
+  position Int     @default(0)
+  pinned   Boolean @default(false)
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id])
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+
+  @@unique([userId, artifactId])
+  @@index([userId])
+  @@map("vault_cards")
+}
+
+// ============================================================================
+// ACTION RECORDS (append-only enforcement log)
+// ============================================================================
+
+model ActionRecord {
+  id         String @id @default(uuid())
+  artifactId String @map("artifact_id")
+  runId      String @map("run_id")
+
+  actionType  EnforcementAction @map("action_type")
+  reasonCode  String            @map("reason_code") @db.VarChar(64)
+
+  receiptHash String @map("receipt_hash") @db.VarChar(64)
+
+  localTime  DateTime @map("local_time")
+  timeSource String   @map("time_source") @db.VarChar(32) // TSA or DEGRADED_LOCAL
+  timestamp  DateTime
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([artifactId])
+  @@index([runId])
+  @@map("action_records")
+}

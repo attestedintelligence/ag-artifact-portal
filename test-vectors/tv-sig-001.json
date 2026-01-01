@@ -1,0 +1,18 @@
+{
+  "id": "TV-SIG-001",
+  "description": "Ed25519 signature verification test vector per AGA Spec Appendix B.3",
+  "warning": "TEST ONLY - Never use these keys in production",
+  "keys": {
+    "public_key_base64url": "lKRKF0qyRCAgAy20lqWwTunJjnb8Id7ijIHcoXaWmrg",
+    "private_key_base64url": "S38UdZHLAVZYYoGvjvmF1gp-L2Yo6KDXAPukOiLMMx0",
+    "key_id": "36ee3280c62ed537"
+  },
+  "message": {
+    "canonical_json": "{\"artifact_id\":\"art_01HXYZTEST0000000000000001\",\"measurement_id\":\"m_0001\",\"measurement_time\":1735600000,\"run_id\":\"run_01HXYZTEST0000000000000001\",\"sequence_number\":1,\"stream_id\":\"pressure_psi\",\"value\":42}",
+    "sha256_base64url": "uM22uzzEnt39f1ZO14U_gZ7C7mGvCW87JPKCvgRGe-Q"
+  },
+  "expected": {
+    "signature_base64url": "uqon4tfDmyfYaM9txEyQAHlHPRQVc3Qrw22_0PnFpuEAlrDA8kwnOh4eNa76SdA0d9099mbRh8WRKB0uJurjCg",
+    "verification_result": true
+  }
+}

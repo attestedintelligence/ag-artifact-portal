@@ -1,0 +1,25 @@
+# =============================================================================
+# Offline Verifier - Dockerfile
+# Per AGA Build Guide Phase 12
+# =============================================================================
+
+# Lightweight Node.js image for offline verification
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy verifier package
+COPY packages/core/package.json ./packages/core/
+COPY packages/core/dist ./packages/core/dist
+
+# Install minimal dependencies
+RUN npm install --production
+
+# Create verification script
+COPY docker/verify.sh /usr/local/bin/verify
+RUN chmod +x /usr/local/bin/verify
+
+# Set up working directory for bundles
+WORKDIR /bundles
+
+ENTRYPOINT ["verify"]
+CMD ["--help"]
