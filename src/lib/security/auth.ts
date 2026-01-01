@@ -42,6 +42,7 @@ export interface MagicLinkToken {
 // ============================================================================
 
 // In production, use proper JWT library and secrets
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const MAGIC_LINK_EXPIRY = 15 * 60 * 1000; // 15 minutes
 const SESSION_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days

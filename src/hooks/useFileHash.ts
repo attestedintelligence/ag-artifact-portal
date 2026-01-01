@@ -10,10 +10,10 @@
 
 import { useState, useCallback } from 'react';
 import {
-  hashFile,
+  hashFile as _hashFile,
   sha256String,
   computeFileHashes,
-  extractFileMetadata,
+  extractFileMetadata as _extractFileMetadata,
   type HashProgress,
   type ProgressCallback,
 } from '@attested/core';

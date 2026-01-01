@@ -22,10 +22,10 @@ import {
   Download,
   Share2,
   ExternalLink,
-  Copy,
+  // Copy,
   Check,
   Clock,
-  Hash,
+  // Hash,
   Lock,
   FileCheck,
   QrCode,
@@ -116,7 +116,7 @@ function HashBadge({ label, hash }: { label: string; hash: string }) {
 // QR CODE PLACEHOLDER
 // ============================================================================
 
-function QRCodePlaceholder({ sealedHash }: { sealedHash: string }) {
+function QRCodePlaceholder({ sealedHash: _sealedHash }: { sealedHash: string }) {
   // TODO: Replace with actual QR code generation (e.g., qrcode.react)
   return (
     <div className="relative w-32 h-32 bg-white rounded-lg p-2 mx-auto">
@@ -139,7 +139,7 @@ function QRCodePlaceholder({ sealedHash }: { sealedHash: string }) {
 export function VaultCard({
   data,
   onVerify,
-  onDownloadBundle,
+  _onDownloadBundle,
   onShare,
   className,
 }: VaultCardProps) {

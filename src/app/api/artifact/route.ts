@@ -42,7 +42,9 @@ interface CreateArtifactRequest {
   };
 }
 
-interface SealArtifactRequest {
+// Used in /api/artifact/[id]/seal/route.ts
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface _SealArtifactRequest {
   bytesHash: string;
   metadataHash: string;
   fileSize?: number;

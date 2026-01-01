@@ -345,7 +345,7 @@ function ReceiptTimeline({ receipts }: { receipts: Receipt[] }) {
 
 export default function ArtifactDetailPage() {
   const params = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const [artifact, setArtifact] = useState<ArtifactDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);

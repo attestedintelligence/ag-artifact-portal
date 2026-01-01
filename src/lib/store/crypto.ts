@@ -9,15 +9,12 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { KeyClass, SigningKey } from '@attested/core';
+import type { KeyClass } from '@attested/core';
 import {
   generateFullKeyPair,
   encryptPrivateKey,
   decryptPrivateKey,
-  getKeyFingerprint,
-  validateKeyPair,
   importPrivateKey,
-  type GeneratedKeyPair,
   type EncryptedKey,
 } from '@attested/core';
 

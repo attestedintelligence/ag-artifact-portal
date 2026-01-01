@@ -7,7 +7,7 @@
  * Displays all user's artifacts as cards.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -29,11 +29,8 @@ import {
   SortAsc,
   SortDesc,
   RefreshCw,
-  Download,
-  Settings,
   Clock,
   CheckCircle,
-  AlertTriangle,
   XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -170,7 +167,7 @@ function StatusCounts({ artifacts }: { artifacts: VaultCardData[] }) {
 // ============================================================================
 
 export default function VaultPage() {
-  const [artifacts, setArtifacts] = useState<VaultCardData[]>(MOCK_ARTIFACTS);
+  const [artifacts, _setArtifacts] = useState<VaultCardData[]>(MOCK_ARTIFACTS);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');

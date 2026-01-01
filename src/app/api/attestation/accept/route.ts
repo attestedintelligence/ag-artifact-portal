@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     // }
 
     // Generate attestor ID from public key
-    const encoder = new TextEncoder();
+    // const encoder = new TextEncoder(); // Prepared for future use
     const publicKeyBytes = Buffer.from(body.public_key, 'base64');
     const hashBuffer = await crypto.subtle.digest('SHA-256', publicKeyBytes);
     const hashArray = Array.from(new Uint8Array(hashBuffer));

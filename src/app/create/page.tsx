@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { FileUpload } from '@/components/artifact/FileUpload';
 import { ArtifactDetailsForm, type ArtifactDetails } from '@/components/artifact/ArtifactDetailsForm';
-import { RuntimeSettings, type RuntimeConfig, type EnforcementAction } from '@/components/artifact/RuntimeSettings';
+import { RuntimeSettings, type RuntimeConfig } from '@/components/artifact/RuntimeSettings';
 import { CryptoSummary, type HashValues } from '@/components/artifact/CryptoSummary';
 import { AttestationManager, type PendingAttestor, type AttestorRole } from '@/components/artifact/AttestationManager';
 import { Button } from '@/components/ui/button';
@@ -539,7 +539,7 @@ export default function CreatePage() {
                     <h2 className="text-xl font-semibold mb-2">Ready to Seal</h2>
                     <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
                       Your artifact will be cryptographically sealed with Ed25519 signature.
-                      This creates a tamper-evident proof of the file's state.
+                      This creates a tamper-evident proof of the file&apos;s state.
                     </p>
 
                     {sealError && (
