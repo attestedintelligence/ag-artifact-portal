@@ -12,7 +12,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { FileUpload } from '@/components/artifact/FileUpload';
 import { ArtifactDetailsForm, type ArtifactDetails } from '@/components/artifact/ArtifactDetailsForm';
-import { RuntimeSettings, type RuntimeConfig } from '@/components/artifact/RuntimeSettings';
+import { RuntimeSettings, type RuntimeConfig, type EnforcementAction, type SubjectCategory, type MeasurementType } from '@/components/artifact/RuntimeSettings';
+import { MEASUREMENT_TYPES, ENFORCEMENT_ACTIONS } from '@/lib/constants';
 import { CryptoSummary, type HashValues } from '@/components/artifact/CryptoSummary';
 import { AttestationManager, type PendingAttestor, type AttestorRole } from '@/components/artifact/AttestationManager';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ import {
   Users,
   Download,
   Share2,
+  Zap,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -66,8 +68,8 @@ const STEPS: StepConfig[] = [
   },
   {
     id: 'settings',
-    title: 'Settings',
-    description: 'Runtime config',
+    title: 'Governance',
+    description: 'Runtime policy',
     icon: Shield,
   },
   {
@@ -96,9 +98,13 @@ const DEFAULT_DETAILS: ArtifactDetails = {
 };
 
 const DEFAULT_RUNTIME: RuntimeConfig = {
-  measurementCadenceMs: 60000, // 1 minute
+  subjectCategory: 'scada' as SubjectCategory,
+  measurementTypes: MEASUREMENT_TYPES
+    .filter(m => m.defaultEnabled)
+    .map(m => m.id) as MeasurementType[],
+  measurementCadenceMs: 10000, // 10 seconds for demo
   ttlSeconds: 2592000, // 30 days
-  enforcementAction: 'ALERT',
+  enforcementAction: 'QUARANTINE' as EnforcementAction,
 };
 
 // ============================================================================
@@ -411,7 +417,12 @@ export default function CreatePage() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back</span>
           </Link>
-          <h1 className="text-lg font-semibold">Create Artifact</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-semibold">AGA Portal</h1>
+            <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              ENTERPRISE PREVIEW
+            </span>
+          </div>
           <div className="w-16" /> {/* Spacer for centering */}
         </div>
       </header>
@@ -480,9 +491,9 @@ export default function CreatePage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <h2 className="text-xl font-semibold mb-2">Runtime Settings</h2>
+                <h2 className="text-xl font-semibold mb-2">Governance Policy</h2>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Configure monitoring cadence, expiration, and enforcement behavior.
+                  Define subject category, integrity measurements, and enforcement actions.
                 </p>
                 <RuntimeSettings value={runtime} onChange={setRuntime} />
               </motion.div>
@@ -531,7 +542,11 @@ export default function CreatePage() {
                   <dl className="grid grid-cols-2 gap-2 text-sm">
                     <dt className="text-muted-foreground">Name</dt>
                     <dd className="truncate">{details.name}</dd>
-                    <dt className="text-muted-foreground">Measurement Cadence</dt>
+                    <dt className="text-muted-foreground">Subject Category</dt>
+                    <dd className="text-primary capitalize">{runtime.subjectCategory.replace(/_/g, ' ')}</dd>
+                    <dt className="text-muted-foreground">Measurements</dt>
+                    <dd>{runtime.measurementTypes.length} types</dd>
+                    <dt className="text-muted-foreground">Cadence</dt>
                     <dd>
                       {runtime.measurementCadenceMs >= 60000
                         ? `${runtime.measurementCadenceMs / 60000} min`
@@ -545,16 +560,12 @@ export default function CreatePage() {
                           : `${Math.round(runtime.ttlSeconds / 3600)} hours`
                         : 'No expiration'}
                     </dd>
-                    <dt className="text-muted-foreground">On Drift</dt>
-                    <dd className={cn(
-                      runtime.enforcementAction === 'KILL' && 'text-red-400',
-                      runtime.enforcementAction === 'ALERT' && 'text-amber-400',
-                      runtime.enforcementAction === 'BLOCK_START' && 'text-primary',
-                    )}>
-                      {runtime.enforcementAction}
+                    <dt className="text-muted-foreground">Enforcement</dt>
+                    <dd style={{
+                      color: ENFORCEMENT_ACTIONS.find(a => a.id === runtime.enforcementAction)?.color
+                    }}>
+                      {ENFORCEMENT_ACTIONS.find(a => a.id === runtime.enforcementAction)?.label || runtime.enforcementAction}
                     </dd>
-                    <dt className="text-muted-foreground">Include Payload</dt>
-                    <dd>{includePayload ? 'Yes' : 'No'}</dd>
                   </dl>
                 </div>
               </motion.div>
@@ -668,11 +679,18 @@ export default function CreatePage() {
                       )}
                     </div>
 
-                    <div className="flex gap-4 justify-center">
+                    <div className="flex gap-3 justify-center flex-wrap">
+                      <Button asChild className="glow-cyan">
+                        <Link href="/dashboard">
+                          <Zap className="w-4 h-4 mr-2" />
+                          Launch Simulation
+                        </Link>
+                      </Button>
                       <Button variant="outline" asChild>
                         <Link href="/vault">View Vault</Link>
                       </Button>
                       <Button
+                        variant="ghost"
                         onClick={() => {
                           // Reset form
                           setCurrentStep('upload');

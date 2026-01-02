@@ -23,25 +23,27 @@ const geistMono = localFont({
 // Optimized metadata
 export const metadata: Metadata = {
   title: {
-    default: "AGA Portal | Attested Intelligence",
-    template: "%s | AGA Portal",
+    default: "Attested Intelligence | Cryptographic Proof of Integrity",
+    template: "%s | Attested Intelligence",
   },
-  description: "Attested Governance Artifacts - Cryptographic attestation platform for creating tamper-evident policy artifacts and verifiable evidence bundles.",
-  keywords: ["attestation", "governance", "artifacts", "cryptographic", "verification", "evidence", "policy", "compliance"],
+  description: "Seal files and systems. Detect unauthorized changes. Prove what happened. Tamper-evident cryptographic attestation for consumers and enterprises.",
+  keywords: ["cryptographic attestation", "file verification", "tamper-evident", "blockchain alternative", "Ed25519", "SHA-256", "offline verification", "integrity proof", "AI governance", "autonomous systems"],
   authors: [{ name: "Attested Intelligence" }],
   creator: "Attested Intelligence",
   metadataBase: new URL("https://attestedintelligence.com"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "AGA Portal",
-    title: "AGA Portal | Attested Intelligence",
-    description: "Attested Governance Artifacts - The Integrity Layer for Autonomous Defense.",
+    siteName: "Attested Intelligence",
+    title: "Attested Intelligence | Cryptographic Proof of Integrity",
+    description: "Seal files and systems. Detect unauthorized changes. Prove what happened.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AGA Portal | Attested Intelligence",
-    description: "Attested Governance Artifacts - The Integrity Layer for Autonomous Defense.",
+    title: "Attested Intelligence | Cryptographic Proof of Integrity",
+    description: "Seal files and systems. Detect unauthorized changes. Prove what happened.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
