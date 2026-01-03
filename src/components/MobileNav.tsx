@@ -22,7 +22,7 @@ import {
 
 const NAV_ITEMS = [
   {
-    href: '/',
+    href: '/dashboard',
     label: 'Home',
     icon: Home,
   },
@@ -56,9 +56,12 @@ const NAV_ITEMS = [
 export function MobileNav() {
   const pathname = usePathname();
 
-  // Don't show on certain pages
-  const hiddenPaths = ['/login', '/signup', '/onboarding'];
-  if (hiddenPaths.some(p => pathname.startsWith(p))) {
+  // Only show on authenticated portal pages
+  const portalPaths = ['/vault', '/create', '/dashboard', '/settings', '/verify/'];
+  const isPortalPage = portalPaths.some(p => pathname.startsWith(p));
+
+  // Hide on landing pages and auth pages
+  if (!isPortalPage) {
     return null;
   }
 
