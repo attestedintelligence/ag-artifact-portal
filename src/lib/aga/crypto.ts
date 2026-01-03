@@ -306,6 +306,9 @@ export async function signArtifact(
   artifact: Omit<PolicyArtifact, 'signature'>,
   privateKey: Uint8Array
 ): Promise<PolicyArtifact> {
+  // Ensure sha512Sync is configured
+  ensureSha512Sync();
+
   // Serialize to canonical JSON
   const canonical = canonicalStringify(artifact);
   const bytes = new TextEncoder().encode(canonical);
@@ -362,10 +365,32 @@ export async function verifyArtifactSignature(
 // ============================================================================
 
 /**
+ * Ensure sha512Sync is configured before any Ed25519 operation
+ * This is critical for serverless environments where module initialization order is not guaranteed
+ */
+function ensureSha512Sync() {
+  const etc = ed25519.etc as typeof ed25519.etc & {
+    sha512Sync?: (...m: Uint8Array[]) => Uint8Array;
+  };
+  if (typeof etc.sha512Sync !== 'function') {
+    etc.sha512Sync = (...m: Uint8Array[]) => {
+      const concat = ed25519.etc.concatBytes(...m);
+      return sha512(concat);
+    };
+  }
+}
+
+/**
  * Generate Ed25519 key pair
  */
 export async function generateKeyPair(keyType: KeyType): Promise<KeyPair> {
-  const privateKey = ed25519.utils.randomSecretKey();
+  // Ensure sha512Sync is configured
+  ensureSha512Sync();
+
+  // Generate random 32 bytes for private key
+  const privateKey = new Uint8Array(32);
+  crypto.getRandomValues(privateKey);
+
   const publicKey = await ed25519.getPublicKeyAsync(privateKey);
 
   // Compute key ID from public key fingerprint
