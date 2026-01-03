@@ -163,6 +163,10 @@ enum EnforcementAction {
   BLOCK_START
   KILL
   ALERT
+  QUARANTINE
+  TERMINATE
+  NETWORK_ISOLATION
+  SAFE_STATE
 }
 
 enum AnchorStatus {
