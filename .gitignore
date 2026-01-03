@@ -40,3 +40,4 @@ prisma/migrations/
 next-env.d.ts
 
 .vercel
+.env*.local

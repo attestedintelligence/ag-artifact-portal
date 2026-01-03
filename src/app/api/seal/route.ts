@@ -20,8 +20,9 @@ import {
 } from '@/lib/aga/crypto';
 import { KeyType } from '@/lib/aga/types';
 
-// Force dynamic rendering
+// Force dynamic rendering and use Node.js runtime for crypto
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // ============================================================================
 // TYPES
@@ -66,29 +67,31 @@ function generateRunId(): string {
 // ============================================================================
 
 export async function POST(request: NextRequest) {
-  console.log('[SEAL] Starting seal request');
-
-  let authResult;
+  // Top-level error wrapper for debugging
   try {
-    authResult = await authenticateRequest(request);
-  } catch (authError) {
-    console.error('[SEAL] Auth error:', authError);
-    return NextResponse.json(
-      { error: 'Authentication error', code: 'AUTH_ERROR' },
-      { status: 500 }
-    );
-  }
+    console.log('[SEAL] Starting seal request');
 
-  if (!authResult.success) {
-    console.log('[SEAL] Auth failed:', authResult.error);
-    return NextResponse.json(
-      { error: authResult.error, code: 'AUTH_REQUIRED' },
-      { status: authResult.status }
-    );
-  }
+    let authResult;
+    try {
+      authResult = await authenticateRequest(request);
+    } catch (authError) {
+      console.error('[SEAL] Auth error:', authError);
+      return NextResponse.json(
+        { error: 'Authentication error', code: 'AUTH_ERROR' },
+        { status: 500 }
+      );
+    }
 
-  const user = authResult.user;
-  console.log('[SEAL] Authenticated user:', user.id);
+    if (!authResult.success) {
+      console.log('[SEAL] Auth failed:', authResult.error);
+      return NextResponse.json(
+        { error: authResult.error, code: 'AUTH_REQUIRED' },
+        { status: authResult.status }
+      );
+    }
+
+    const user = authResult.user;
+    console.log('[SEAL] Authenticated user:', user.id);
 
   try {
     const body = await request.json() as SealRequest;
@@ -369,6 +372,15 @@ export async function POST(request: NextRequest) {
         code: 'INTERNAL_ERROR',
         stack: errorStack?.split('\n').slice(0, 5).join('\n'),
       },
+      { status: 500 }
+    );
+  }
+  } catch (topLevelError) {
+    // Top-level catch for any unexpected errors
+    console.error('[SEAL] Top-level error:', topLevelError);
+    const msg = topLevelError instanceof Error ? topLevelError.message : 'Unknown top-level error';
+    return NextResponse.json(
+      { error: msg, code: 'FATAL_ERROR' },
       { status: 500 }
     );
   }

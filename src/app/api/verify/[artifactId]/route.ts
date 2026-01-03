@@ -27,10 +27,13 @@ interface PublicVerifyResponse {
   artifactId: string;
   vaultId: string;
   displayName: string;
+  description?: string;
   status: 'ACTIVE' | 'EXPIRED' | 'REVOKED';
   sealedAt: string;
   expiresAt?: string;
   sealedHash: string;
+  bytesHash: string;
+  metadataHash: string;
   issuer: {
     keyId: string;
   };
@@ -171,10 +174,13 @@ export async function GET(
       artifactId: artifact.id,
       vaultId: artifact.user.vaultId,
       displayName: artifact.vaultCard?.displayName || artifact.name,
+      description: artifact.description || undefined,
       status,
       sealedAt: artifact.issuedAt?.toISOString() || artifact.createdAt.toISOString(),
       expiresAt: artifact.expiresAt?.toISOString(),
       sealedHash: artifact.sealedHash,
+      bytesHash: artifact.bytesHash,
+      metadataHash: artifact.metadataHash,
       issuer: {
         keyId: artifact.signingKeyId,
       },

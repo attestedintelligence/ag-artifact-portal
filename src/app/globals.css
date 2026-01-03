@@ -239,4 +239,125 @@
     );
     background-size: 100% 4px;
   }
+
+
+  /* ========================================================================
+   * iOS Safari / iPhone 13 Optimizations
+   * ======================================================================== */
+
+  /* Safe area utilities for notch and home indicator */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left, 0);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right, 0);
+  }
+
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
+
+  /* Touch-friendly tap targets (44x44 minimum) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  .touch-target-lg {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* Mobile-optimized glass (reduced blur for performance) */
+  @media (max-width: 768px) {
+    .glass,
+    .glass-card {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .glass-strong {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  }
+
+  /* Prevent text size adjustment on orientation change */
+  .no-text-adjust {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 }
+
+/* ============================================================================
+ * iOS Safari Specific Fixes
+ * ============================================================================ */
+
+@layer base {
+  /* Prevent zoom on input focus (iOS Safari) */
+  @media screen and (max-width: 768px) {
+    input[type='text'],
+    input[type='email'],
+    input[type='password'],
+    input[type='number'],
+    input[type='tel'],
+    input[type='url'],
+    input[type='search'],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Smooth scrolling with momentum */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Fix for iOS Safari 100vh issue */
+  .min-h-screen-ios {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* Prevent pull-to-refresh interference */
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  /* Fix for iOS input styling */
+  input,
+  textarea,
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
+  }
+
+  /* Improve tap highlight on iOS */
+  a,
+  button,
+  [role='button'] {
+    -webkit-tap-highlight-color: rgba(0, 212, 255, 0.1);
+  }
+
+  /* Fix for position:fixed on iOS Safari */
+  .fixed-ios {
+    position: fixed;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+}
+

@@ -48,10 +48,13 @@ interface VerificationResult {
   artifactId: string;
   vaultId: string;
   displayName: string;
+  description?: string;
   status: 'ACTIVE' | 'EXPIRED' | 'REVOKED';
   sealedAt: string;
   expiresAt?: string;
   sealedHash: string;
+  bytesHash?: string;
+  metadataHash?: string;
   issuer: {
     keyId: string;
   };
@@ -178,7 +181,7 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -239,7 +242,12 @@ export default function VerifyPage() {
 
             {/* Artifact Info */}
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-lg font-semibold mb-3">{result.displayName}</h3>
+              <h3 className="text-lg font-semibold mb-2">{result.displayName}</h3>
+              {result.description && (
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
+                  {result.description}
+                </p>
+              )}
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 justify-center md:justify-start">
                   <Key className="w-4 h-4 text-muted-foreground" />

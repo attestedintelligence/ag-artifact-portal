@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
-import "./globals.css";
+import './globals.css';
+import { MobileNav } from '@/components/MobileNav';
 
 // Primary font - Space Grotesk (per design spec)
 const spaceGrotesk = Space_Grotesk({
@@ -53,12 +54,14 @@ export const metadata: Metadata = {
 
 // Viewport optimization
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover', // Enable safe area insets for iPhone notch
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0A0E17" },
-    { media: "(prefers-color-scheme: dark)", color: "#0A0E17" },
+    { media: '(prefers-color-scheme: light)', color: '#0A0E17' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0E17' },
   ],
 };
 
@@ -70,14 +73,19 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {/* iOS Safari optimizations */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="format-detection" content="telephone=no" />
         {/* DNS prefetch for external resources */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${geistMono.variable} font-sans antialiased bg-void text-foreground min-h-screen`}
+        className={`${spaceGrotesk.variable} ${geistMono.variable} font-sans antialiased bg-void text-foreground min-h-screen min-h-screen-ios no-text-adjust`}
       >
         {children}
+        <MobileNav />
       </body>
     </html>
   );
