@@ -4,10 +4,10 @@ import { Nav, Footer } from '@/components/landing';
 import { EXTERNAL_LINKS, SITE_CONFIG } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'VerifiedBundle | Seal any file. Prove it later.',
+  title: 'VerifiedBundle | Seal any file. Verify and prove it later.',
   description: 'Generate a tamper-evident evidence bundle with an offline verifier. Client-side hashing, Ed25519 signatures, no file storage.',
   openGraph: {
-    title: 'VerifiedBundle | Seal any file. Prove it later.',
+    title: 'VerifiedBundle | Seal any file. Verify and prove it later.',
     description: 'Generate a tamper-evident evidence bundle with an offline verifier.',
     url: `https://${SITE_CONFIG.domain}/verifiedbundle`,
   },
@@ -141,8 +141,9 @@ export default function VerifiedBundlePage() {
         <section className="py-16 sm:py-24 px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-white">
-                Seal any file. Prove it later.
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-white leading-tight">
+                <span className="block">Seal any file.</span>
+                <span className="block">Verify and prove it later.</span>
               </h1>
               <p className="text-base sm:text-lg max-w-2xl mx-auto text-gray-400">
                 Generate a tamper-evident evidence bundle with an offline verifier—no accounts required.
