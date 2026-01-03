@@ -113,6 +113,63 @@ function BundleCard() {
   );
 }
 
+// Mobile-optimized hero icon
+function MobileHeroIcon() {
+  return (
+    <div className="flex justify-center mb-8">
+      <div
+        className="w-20 h-20 rounded-2xl flex items-center justify-center"
+        style={{
+          backgroundColor: COLORS.cyanGlow,
+          boxShadow: `0 0 60px ${COLORS.cyan}40`,
+        }}
+      >
+        <svg
+          className="w-10 h-10"
+          style={{ color: COLORS.cyan }}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// Mobile trust strip - simplified
+function MobileTrustStrip() {
+  const mobileItems = [
+    { label: 'SHA-256', color: COLORS.cyan },
+    { label: 'Ed25519', color: COLORS.cyan },
+    { label: 'Offline', color: COLORS.success },
+  ];
+
+  return (
+    <div className="flex justify-center gap-4 mb-8">
+      {mobileItems.map((item) => (
+        <div
+          key={item.label}
+          className="px-3 py-1.5 rounded-full text-xs font-medium border"
+          style={{
+            borderColor: `${item.color}40`,
+            color: item.color,
+            backgroundColor: `${item.color}10`,
+          }}
+        >
+          {item.label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function Hero() {
   return (
     <section
@@ -120,25 +177,36 @@ export function Hero() {
       style={{ backgroundColor: COLORS.void }}
     >
       <div className="max-w-6xl mx-auto w-full">
+        {/* Mobile Hero Icon - only on small screens */}
+        <div className="md:hidden">
+          <MobileHeroIcon />
+        </div>
+
         {/* Main Headline */}
-        <div className="text-center mb-10 sm:mb-12">
+        <div className="text-center mb-8 md:mb-12">
           <h1
-            className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight tracking-tight"
+            className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight tracking-tight"
             style={{ color: COLORS.textPrimary }}
           >
             <span className="block sm:inline">Prove integrity.</span>{' '}
             <span className="block sm:inline">Verify it offline.</span>
           </h1>
           <p
-            className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed px-4"
+            className="text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed"
             style={{ color: COLORS.textSecondary }}
           >
-            {SITE_CONFIG.description}
+            <span className="hidden sm:inline">{SITE_CONFIG.description}</span>
+            <span className="sm:hidden">Seal files with cryptographic proof. Export bundles anyone can verify—even air-gapped.</span>
           </p>
         </div>
 
+        {/* Mobile Trust Strip - only on small screens */}
+        <div className="md:hidden">
+          <MobileTrustStrip />
+        </div>
+
         {/* Two Primary CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-16 px-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 md:mb-16">
           <Link
             href={EXTERNAL_LINKS.verifiedBundle}
             target="_blank"
@@ -163,20 +231,30 @@ export function Hero() {
           </Link>
         </div>
 
-        {/* Visual Proof Centerpiece */}
-        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto mb-12 sm:mb-16 px-4">
+        {/* Visual Proof Centerpiece - hidden on mobile */}
+        <div className="hidden md:grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
           <BundleCard />
           <VerifierOutput />
         </div>
 
-        {/* Trust Strip */}
+        {/* Desktop Trust Strip - hidden on mobile */}
         <div
-          className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 py-4 rounded-lg mx-4"
+          className="hidden md:flex flex-wrap items-center justify-center gap-4 py-4 rounded-lg"
           style={{ backgroundColor: COLORS.surface }}
         >
           {TRUST_BADGES.map((badge) => (
             <TrustBadge key={badge.label} label={badge.label} description={badge.description} />
           ))}
+        </div>
+
+        {/* Mobile Bottom Info */}
+        <div
+          className="md:hidden mt-8 p-4 rounded-lg text-center"
+          style={{ backgroundColor: COLORS.surface }}
+        >
+          <p className="text-xs" style={{ color: COLORS.textMuted }}>
+            No file storage • Client-side hashing • Air-gap verified
+          </p>
         </div>
       </div>
     </section>
