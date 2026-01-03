@@ -125,30 +125,47 @@ export async function POST(request: NextRequest) {
 
     // Get or create signing key for user
     console.log('[SEAL] Looking for signing key...');
-    let signingKey = await prisma.signingKey.findFirst({
-      where: {
-        userId: user.id,
-        keyClass: 'POLICY_ISSUER',
-        revokedAt: null,
-      },
-    });
-    console.log('[SEAL] Existing signing key:', signingKey?.id || 'none');
+    let signingKey;
+    try {
+      signingKey = await prisma.signingKey.findFirst({
+        where: {
+          userId: user.id,
+          keyClass: 'POLICY_ISSUER',
+          revokedAt: null,
+        },
+      });
+      console.log('[SEAL] Existing signing key:', signingKey?.id || 'none');
+    } catch (dbError) {
+      console.error('[SEAL] DB error finding signing key:', dbError);
+      throw new Error(`Database error finding signing key: ${dbError instanceof Error ? dbError.message : 'Unknown'}`);
+    }
 
     if (!signingKey) {
       // Generate new key pair using AGA library
       console.log('[SEAL] Generating new key pair...');
-      const keyPair = await generateKeyPair(KeyType.POLICY_ISSUER);
-      console.log('[SEAL] Key pair generated:', keyPair.keyId);
+      let keyPair;
+      try {
+        keyPair = await generateKeyPair(KeyType.POLICY_ISSUER);
+        console.log('[SEAL] Key pair generated:', keyPair.keyId);
+      } catch (cryptoError) {
+        console.error('[SEAL] Crypto error generating key pair:', cryptoError);
+        throw new Error(`Crypto error generating key pair: ${cryptoError instanceof Error ? cryptoError.message : 'Unknown'}`);
+      }
 
-      signingKey = await prisma.signingKey.create({
-        data: {
-          id: keyPair.keyId,
-          userId: user.id,
-          publicKeyB64: exportPublicKey(keyPair.publicKey),
-          keyClass: 'POLICY_ISSUER',
-        },
-      });
-      console.log('[SEAL] Signing key created:', signingKey.id);
+      try {
+        signingKey = await prisma.signingKey.create({
+          data: {
+            id: keyPair.keyId,
+            userId: user.id,
+            publicKeyB64: exportPublicKey(keyPair.publicKey),
+            keyClass: 'POLICY_ISSUER',
+          },
+        });
+        console.log('[SEAL] Signing key created:', signingKey.id);
+      } catch (dbError) {
+        console.error('[SEAL] DB error creating signing key:', dbError);
+        throw new Error(`Database error creating signing key: ${dbError instanceof Error ? dbError.message : 'Unknown'}`);
+      }
     }
 
     // Generate artifact ID and run ID
@@ -217,31 +234,37 @@ export async function POST(request: NextRequest) {
 
     // Create artifact in database
     console.log('[SEAL] Creating artifact in database...');
-    const artifact = await prisma.artifact.create({
-      data: {
-        id: uuid(),
-        userId: user.id,
-        name: body.name.trim(),
-        description: body.description?.trim() || null,
-        bytesHash: body.bytesHash,
-        metadataHash: body.metadataHash,
-        sealedHash: body.sealedHash,
-        salt,
-        policyVersion: 1,
-        policyHash,
-        status: 'ACTIVE',
-        issuedAt: now,
-        effectiveAt: now,
-        expiresAt,
-        measurementCadenceMs: body.settings.measurementCadenceMs,
-        ttlSeconds: body.settings.ttlSeconds || null,
-        enforcementAction: body.settings.enforcementAction,
-        payloadIncluded: body.settings.payloadIncluded,
-        signingKeyId: signingKey.id,
-        issuerIdentifier: user.vaultId,
-      },
-    });
-    console.log('[SEAL] Artifact created:', artifact.id);
+    let artifact;
+    try {
+      artifact = await prisma.artifact.create({
+        data: {
+          id: uuid(),
+          userId: user.id,
+          name: body.name.trim(),
+          description: body.description?.trim() || null,
+          bytesHash: body.bytesHash,
+          metadataHash: body.metadataHash,
+          sealedHash: body.sealedHash,
+          salt,
+          policyVersion: 1,
+          policyHash,
+          status: 'ACTIVE',
+          issuedAt: now,
+          effectiveAt: now,
+          expiresAt,
+          measurementCadenceMs: body.settings.measurementCadenceMs,
+          ttlSeconds: body.settings.ttlSeconds || null,
+          enforcementAction: body.settings.enforcementAction,
+          payloadIncluded: body.settings.payloadIncluded,
+          signingKeyId: signingKey.id,
+          issuerIdentifier: user.vaultId,
+        },
+      });
+      console.log('[SEAL] Artifact created:', artifact.id);
+    } catch (dbError) {
+      console.error('[SEAL] DB error creating artifact:', dbError);
+      throw new Error(`Database error creating artifact: ${dbError instanceof Error ? dbError.message : 'Unknown'}`);
+    }
 
     // Create genesis receipt
     const genesisReceiptData = {
