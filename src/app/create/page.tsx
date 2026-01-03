@@ -662,19 +662,58 @@ export default function CreatePage() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 justify-center flex-wrap mb-6">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!sealedArtifact || !sealedHash) return;
+                          const sealData = {
+                            artifactId: sealedArtifact.artifactId,
+                            vaultId: sealedArtifact.vaultId,
+                            name: details.name,
+                            description: details.description,
+                            bytesHash: fileHash?.bytes_hash,
+                            metadataHash,
+                            sealedHash,
+                            issuedAt: new Date().toISOString(),
+                            verifyUrl: `${window.location.origin}${sealedArtifact.verifyUrl}`,
+                          };
+                          const blob = new Blob([JSON.stringify(sealData, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${sealedArtifact.artifactId}-seal.json`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        }}
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Save Card
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!sealedArtifact) return;
+                          const shareUrl = `${window.location.origin}${sealedArtifact.verifyUrl}`;
+                          navigator.clipboard.writeText(shareUrl);
+                          alert('Verification URL copied to clipboard!');
+                        }}
+                      >
                         <Share2 className="w-4 h-4 mr-2" />
                         Share
                       </Button>
                       {sealedArtifact && (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={sealedArtifact.verifyUrl}>
-                            Verify
-                          </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            window.open(sealedArtifact.verifyUrl, '_blank');
+                          }}
+                        >
+                          Verify
                         </Button>
                       )}
                     </div>

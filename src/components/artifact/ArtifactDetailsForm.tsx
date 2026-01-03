@@ -78,7 +78,7 @@ export function ArtifactDetailsForm({
           type="text"
           value={value.name}
           onChange={handleNameChange}
-          placeholder="e.g., Q4 Financial Report"
+          placeholder="e.g., SCADA-CTL-FW-v3.2.1"
           disabled={disabled}
           className={cn(
             'bg-background',
@@ -107,7 +107,7 @@ export function ArtifactDetailsForm({
           id="artifact-description"
           value={value.description}
           onChange={handleDescriptionChange}
-          placeholder="Optional description of the artifact contents and purpose..."
+          placeholder="PLC firmware binary for industrial control system..."
           disabled={disabled}
           rows={3}
           className={cn(
