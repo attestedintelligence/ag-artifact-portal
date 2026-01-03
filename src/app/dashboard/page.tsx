@@ -48,6 +48,17 @@ import { PATENT_CLAIMS } from '@/lib/constants';
 import type { RuntimeConfig } from '@/components/artifact/RuntimeSettings';
 import { ReceiptChainManager, type ReceiptChain } from '@/lib/chain';
 import { generateEvidenceBundle, downloadBundle, downloadBundleAsZip, type EvidenceBundle } from '@/lib/bundles';
+import { ArweaveAnchor } from '@/components/dashboard';
+
+// ============================================================================
+// LATTICE ALIGNMENT BADGES
+// ============================================================================
+
+const LATTICE_BADGES = {
+  mesh: { label: 'LATTICE MESH', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+  autonomy: { label: 'MISSION AUTONOMY', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  c2: { label: 'NGC2 COMMAND', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+} as const;
 
 // ============================================================================
 // STATE COLORS
@@ -247,21 +258,35 @@ function DemoControls({
   onTriggerDrift: () => void;
   onScenarioChange: (id: string) => void;
 }) {
+  // Separate featured (Lattice-aligned) and standard scenarios
+  const featuredScenarios = DEMO_SCENARIOS.filter(s => s.featured);
+  const standardScenarios = DEMO_SCENARIOS.filter(s => !s.featured);
+
   return (
     <div className="p-4 rounded-lg border border-border bg-card">
-      <div className="text-xs text-muted-foreground mb-3 font-mono">DEMO CONTROLS</div>
+      <div className="text-xs text-muted-foreground mb-3 font-mono flex items-center justify-between">
+        <span>DEMO CONTROLS</span>
+        {scenario.latticeAlignment && (
+          <span className={cn(
+            'px-2 py-0.5 text-[10px] font-medium rounded border',
+            LATTICE_BADGES[scenario.latticeAlignment].color
+          )}>
+            {LATTICE_BADGES[scenario.latticeAlignment].label}
+          </span>
+        )}
+      </div>
       <div className="space-y-3">
         <div className="flex gap-2">
           {!isRunning ? (
             <Button onClick={onStart} size="sm" className="flex-1">
               <Play className="w-4 h-4 mr-1" />
-              Start
+              Start Simulation
             </Button>
           ) : (
             <>
               <Button onClick={onTriggerDrift} size="sm" variant="destructive" className="flex-1">
                 <AlertTriangle className="w-4 h-4 mr-1" />
-                Trigger Drift
+                Inject Threat
               </Button>
               <Button onClick={onStop} size="sm" variant="outline">
                 <Square className="w-4 h-4" />
@@ -270,17 +295,74 @@ function DemoControls({
           )}
         </div>
         <div>
-          <label className="text-xs text-muted-foreground block mb-1">Scenario</label>
-          <select
-            value={scenario.id}
-            onChange={(e) => onScenarioChange(e.target.value)}
-            disabled={isRunning}
-            className="w-full px-2 py-1 text-sm rounded border border-border bg-background text-foreground"
-          >
-            {DEMO_SCENARIOS.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
+          <label className="text-xs text-muted-foreground block mb-2">Mission Scenario</label>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
+            {/* Featured Lattice-aligned scenarios */}
+            {featuredScenarios.length > 0 && (
+              <>
+                <div className="text-[10px] text-primary font-medium mb-1 flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  LATTICE ALIGNED
+                </div>
+                {featuredScenarios.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => onScenarioChange(s.id)}
+                    disabled={isRunning}
+                    className={cn(
+                      'w-full px-2 py-1.5 text-xs rounded border text-left transition-all',
+                      scenario.id === s.id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border hover:border-primary/50 text-muted-foreground hover:text-foreground',
+                      isRunning && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{s.shortName || s.name}</span>
+                      {s.latticeAlignment && (
+                        <span className={cn(
+                          'px-1.5 py-0.5 text-[9px] rounded',
+                          LATTICE_BADGES[s.latticeAlignment].color
+                        )}>
+                          {s.latticeAlignment.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    {s.operationalContext && (
+                      <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                        {s.operationalContext}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </>
+            )}
+
+            {/* Standard scenarios */}
+            {standardScenarios.length > 0 && (
+              <>
+                <div className="text-[10px] text-muted-foreground font-medium mt-2 mb-1">
+                  STANDARD DEMOS
+                </div>
+                {standardScenarios.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => onScenarioChange(s.id)}
+                    disabled={isRunning}
+                    className={cn(
+                      'w-full px-2 py-1.5 text-xs rounded border text-left transition-all',
+                      scenario.id === s.id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border hover:border-primary/50 text-muted-foreground hover:text-foreground',
+                      isRunning && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    {s.shortName || s.name}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -358,14 +440,74 @@ function NarrativePanel({ scenario, state }: { scenario: DemoScenario; state: Si
     return scenario.narrative.closing;
   };
 
+  const borderColor = scenario.latticeAlignment
+    ? scenario.latticeAlignment === 'mesh' ? 'border-cyan-500/30'
+    : scenario.latticeAlignment === 'autonomy' ? 'border-purple-500/30'
+    : 'border-amber-500/30'
+    : 'border-amber-500/30';
+
+  const bgColor = scenario.latticeAlignment
+    ? scenario.latticeAlignment === 'mesh' ? 'bg-cyan-500/5'
+    : scenario.latticeAlignment === 'autonomy' ? 'bg-purple-500/5'
+    : 'bg-amber-500/5'
+    : 'bg-amber-500/5';
+
   return (
-    <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5">
-      <div className="flex items-center gap-2 mb-2">
-        <FileText className="w-4 h-4 text-amber-500" />
-        <span className="text-sm font-medium text-amber-400">Scenario Narrative</span>
+    <div className={cn('p-4 rounded-lg border', borderColor, bgColor)}>
+      {/* Header with Lattice Badge */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-amber-500" />
+          <span className="text-sm font-medium text-amber-400">Mission Brief</span>
+        </div>
+        {scenario.latticeAlignment && (
+          <span className={cn(
+            'px-2 py-0.5 text-[10px] font-medium rounded border',
+            LATTICE_BADGES[scenario.latticeAlignment].color
+          )}>
+            {LATTICE_BADGES[scenario.latticeAlignment].label}
+          </span>
+        )}
       </div>
-      <p className="text-sm text-muted-foreground">{getCurrentNarrative()}</p>
-      <div className="flex flex-wrap gap-1 mt-3">
+
+      {/* Scenario Name */}
+      <h3 className="font-semibold text-foreground mb-2">{scenario.name}</h3>
+
+      {/* Current Narrative */}
+      <p className="text-sm text-muted-foreground mb-4">{getCurrentNarrative()}</p>
+
+      {/* Mission Context (for Lattice-aligned scenarios) */}
+      {(scenario.operationalContext || scenario.threatVector || scenario.missionImpact) && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 rounded bg-background/50 border border-border">
+          {scenario.operationalContext && (
+            <div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                Operational Context
+              </div>
+              <div className="text-xs text-foreground">{scenario.operationalContext}</div>
+            </div>
+          )}
+          {scenario.threatVector && (
+            <div>
+              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-1">
+                Threat Vector
+              </div>
+              <div className="text-xs text-red-300">{scenario.threatVector}</div>
+            </div>
+          )}
+          {scenario.missionImpact && (
+            <div>
+              <div className="text-[10px] text-amber-400 uppercase tracking-wider mb-1">
+                Mission Impact
+              </div>
+              <div className="text-xs text-amber-300">{scenario.missionImpact}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Patent Claims */}
+      <div className="flex flex-wrap gap-1">
         {scenario.patentClaims.slice(0, 5).map(claim => (
           <span
             key={claim}
@@ -812,6 +954,16 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <MeasurementStream events={events} />
             <ChainVisualization events={events} />
+
+            {/* Arweave Anchoring */}
+            {chain && chain.receipts.length > 0 && (
+              <ArweaveAnchor
+                merkleRoot={chain.checkpoints.length > 0 ? chain.checkpoints[chain.checkpoints.length - 1].merkleRoot : null}
+                receiptCount={chain.receipts.length}
+                isSimulated={true}
+              />
+            )}
+
             <NarrativePanel scenario={scenario} state={state} />
 
             {/* Patent Claims Summary */}
