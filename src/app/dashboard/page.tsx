@@ -47,7 +47,7 @@ import { DEMO_SCENARIOS, getDefaultScenario, type DemoScenario } from '@/lib/sim
 import { PATENT_CLAIMS } from '@/lib/constants';
 import type { RuntimeConfig } from '@/components/artifact/RuntimeSettings';
 import { ReceiptChainManager, type ReceiptChain } from '@/lib/chain';
-import { generateEvidenceBundle, downloadBundle, type EvidenceBundle } from '@/lib/bundles';
+import { generateEvidenceBundle, downloadBundle, downloadBundleAsZip, type EvidenceBundle } from '@/lib/bundles';
 
 // ============================================================================
 // STATE COLORS
@@ -544,6 +544,7 @@ export default function DashboardPage() {
   const [chain, setChain] = useState<ReceiptChain | null>(null);
   const [bundle, setBundle] = useState<EvidenceBundle | null>(null);
   const [isGeneratingBundle, setIsGeneratingBundle] = useState(false);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const uptimeRef = useRef<NodeJS.Timeout | null>(null);
   const chainManagerRef = useRef<ReceiptChainManager | null>(null);
 
@@ -623,21 +624,40 @@ export default function DashboardPage() {
     }
   }, [engine]);
 
-  // Download evidence bundle
-  const handleDownloadBundle = useCallback(async () => {
-    if (!currentRun || !chain) return;
+  // Generate evidence bundle
+  const handleGenerateBundle = useCallback(async () => {
+    if (!currentRun || !chain) return null;
 
     setIsGeneratingBundle(true);
     try {
       const newBundle = await generateEvidenceBundle(currentRun, chain);
       setBundle(newBundle);
-      downloadBundle(newBundle, `evidence_bundle_${currentRun.id}.json`);
+      return newBundle;
     } catch (error) {
       console.error('Failed to generate bundle:', error);
+      return null;
     } finally {
       setIsGeneratingBundle(false);
     }
   }, [currentRun, chain]);
+
+  // Download as JSON
+  const handleDownloadJSON = useCallback(async () => {
+    const bundleToDownload = bundle || await handleGenerateBundle();
+    if (bundleToDownload && currentRun) {
+      downloadBundle(bundleToDownload, `evidence_bundle_${currentRun.id}.json`);
+    }
+    setShowDownloadMenu(false);
+  }, [bundle, currentRun, handleGenerateBundle]);
+
+  // Download as ZIP with offline verifier
+  const handleDownloadZIP = useCallback(async () => {
+    const bundleToDownload = bundle || await handleGenerateBundle();
+    if (bundleToDownload && currentRun) {
+      await downloadBundleAsZip(bundleToDownload, `evidence_bundle_${currentRun.id}.zip`);
+    }
+    setShowDownloadMenu(false);
+  }, [bundle, currentRun, handleGenerateBundle]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -666,32 +686,71 @@ export default function DashboardPage() {
               ENTERPRISE PREVIEW
             </span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!chain || chain.receipts.length === 0 || isGeneratingBundle}
-            onClick={handleDownloadBundle}
-            className={cn(
-              bundle && 'border-green-500 text-green-400 hover:bg-green-500/10'
-            )}
-          >
-            {isGeneratingBundle ? (
-              <>
-                <Activity className="w-4 h-4 mr-1 animate-spin" />
-                Generating...
-              </>
-            ) : bundle ? (
-              <>
-                <CheckCircle2 className="w-4 h-4 mr-1" />
-                Download Again
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-1" />
-                Evidence Bundle
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href="/verify-bundle">
+              <Button variant="ghost" size="sm">
+                <Shield className="w-4 h-4 mr-1" />
+                Verify Bundle
+              </Button>
+            </Link>
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!chain || chain.receipts.length === 0 || isGeneratingBundle}
+                onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                className={cn(
+                  bundle && 'border-green-500 text-green-400 hover:bg-green-500/10'
+                )}
+              >
+                {isGeneratingBundle ? (
+                  <>
+                    <Activity className="w-4 h-4 mr-1 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-1" />
+                    Evidence Bundle
+                    <ChevronDown className="w-3 h-3 ml-1" />
+                  </>
+                )}
+              </Button>
+              <AnimatePresence>
+                {showDownloadMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-card shadow-lg z-50"
+                  >
+                    <div className="p-1">
+                      <button
+                        onClick={handleDownloadJSON}
+                        className="w-full px-3 py-2 text-left text-sm rounded hover:bg-muted flex items-center gap-2"
+                      >
+                        <FileText className="w-4 h-4 text-primary" />
+                        <div>
+                          <div className="font-medium">Download JSON</div>
+                          <div className="text-xs text-muted-foreground">Bundle data only</div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={handleDownloadZIP}
+                        className="w-full px-3 py-2 text-left text-sm rounded hover:bg-muted flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4 text-green-400" />
+                        <div>
+                          <div className="font-medium">Download ZIP</div>
+                          <div className="text-xs text-muted-foreground">With offline verifier</div>
+                        </div>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </header>
 

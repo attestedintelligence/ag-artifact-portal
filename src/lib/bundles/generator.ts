@@ -454,3 +454,47 @@ export function downloadBundle(bundle: EvidenceBundle, filename: string = 'evide
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+// ============================================================================
+// ZIP BUNDLE EXPORT
+// ============================================================================
+
+export async function downloadBundleAsZip(bundle: EvidenceBundle, filename: string = 'evidence_bundle.zip'): Promise<void> {
+  // Dynamic import JSZip
+  const JSZip = (await import('jszip')).default;
+  const zip = new JSZip();
+
+  // Add bundle JSON
+  zip.file('bundle.json', bundleToJSON(bundle));
+
+  // Add policy artifact separately
+  zip.file('policy/policy_artifact.json', JSON.stringify(bundle.policyArtifact, null, 2));
+
+  // Add chain files
+  zip.file('chain/receipts.json', JSON.stringify(bundle.chain.receipts, null, 2));
+  zip.file('chain/chain_head.json', JSON.stringify(bundle.chain.head, null, 2));
+  zip.file('chain/checkpoints.json', JSON.stringify(bundle.chain.checkpoints, null, 2));
+
+  // Add manifest
+  zip.file('manifest.json', JSON.stringify(bundle.manifest, null, 2));
+
+  // Add verifier script
+  zip.file('verify.js', bundle.verifierScript);
+
+  // Add README
+  zip.file('README.md', bundle.readme);
+
+  // Add version file
+  zip.file('VERSION.txt', 'AGA Offline Verifier v1.0.0\nGenerated: ' + new Date().toISOString());
+
+  // Generate and download
+  const content = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
