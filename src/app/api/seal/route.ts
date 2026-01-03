@@ -338,11 +338,13 @@ export async function POST(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
     console.error('Error details:', { errorMessage, errorStack });
+
+    // Always return detailed error for debugging (temporary)
     return NextResponse.json(
       {
-        error: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
+        error: errorMessage,
         code: 'INTERNAL_ERROR',
-        details: process.env.NODE_ENV === 'development' ? errorStack : undefined,
+        stack: errorStack?.split('\n').slice(0, 5).join('\n'),
       },
       { status: 500 }
     );

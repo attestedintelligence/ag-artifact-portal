@@ -1,0 +1,312 @@
+please take the most professional intentional steps to refine and redeploy current launch builds associated with vercel projects located at mentinoeid urls  attestedintelligence.com verifiedbundle.com attestedintelligence.com/login: 
+
+Below is a step-by-step directive to refine attestedintelligence.com and its subpages into a clean, defense-grade, conversion-optimized site. This assumes you want: (1) a universal landing page, (2) two primary product paths (VerifiedBundle + AGA Portal), and (3) zero confusion in the first 10 seconds.
+
+0) Non-negotiable outcomes
+
+One sentence promise appears above the fold.
+
+Two primary CTAs only: VerifyBundle and AGA Portal.
+
+Proof > claims: show tangible artifacts (bundle, verifier output, evidence objects).
+
+No jargon wall: every term has a plain-English line beneath it.
+
+Mobile + desktop look intentional (no “developer site” feel).
+
+1) Site map to lock (final)
+
+attestedintelligence.com/
+
+Home (universal landing)
+
+/verifiedbundle
+
+Product landing for VerifyBundle (consumer/enterprise friendly)
+
+/aga
+
+Product landing for Attested Governance Artifacts / Sentinel path (enterprise/defense)
+
+/logina
+
+AGA portal login (existing)
+
+/docs
+
+Minimal documentation hub (MVP-focused)
+
+/trust
+
+Threat model, privacy stance, cryptographic primitives, auditability
+
+/pricing
+
+Simple tiers + licensing CTA
+
+/contact
+
+Single form + calendar link + procurement CTA
+
+/legal
+
+Terms, privacy, disclosures
+
+If you already have pages elsewhere (softwareattestation.com / verifiedbundle.com), you either:
+
+Keep them as product microsites, and link from Home; OR
+
+Fold them under attestedintelligence.com as /verifiedbundle and /aga.
+
+Pick one and enforce it.
+
+2) Home page build (attestedintelligence.com/)
+Step 2.1 — Above-the-fold structure (exact)
+
+Headline (7 words max)
+Example: “Prove software integrity. Verify it offline.”
+
+Subheadline (15–20 words)
+Plain: “Create tamper-evident proof that a file/system stayed unchanged—and export a bundle anyone can verify air-gapped.”
+
+2 CTA buttons only
+
+Primary: “Use VerifyBundle”
+
+Secondary: “Open AGA Portal”
+
+One visual centerpiece
+
+A single “Evidence Bundle” card + “Offline Verifier PASS/FAIL” panel preview.
+
+One trust strip
+
+“No file storage” / “Ed25519 signatures” / “Offline verification” / “Deterministic bundles”
+
+Step 2.2 — Second section: “How it works” (3 steps)
+
+Step 1: “Seal” (creates signed object)
+
+Step 2: “Monitor / Log” (receipts)
+
+Step 3: “Verify offline” (bundle + verifier)
+
+Each step has one sentence + one image.
+
+Step 2.3 — Third section: “Choose your path”
+
+Two cards:
+
+VerifyBundle (fast, simple, broad use)
+
+AGA Portal (runtime governance, high-assurance)
+
+Each card includes:
+
+Who it’s for
+
+What you get
+
+What proof looks like (link to example bundle)
+
+Step 2.4 — Footer requirements
+
+Links: Docs, Trust, Pricing, Contact, Legal
+
+Company identifiers + copyright
+
+No clutter
+
+3) VerifiedBundle page (/verifiedbundle)
+
+This page must read like an actual product someone can use immediately.
+
+Step 3.1 — The “buy/use” story (top)
+
+Headline: “Seal any file. Prove it later.”
+
+Subheadline: “Generate a tamper-evident evidence bundle with an offline verifier—no accounts required (or minimal magic link).”
+
+CTA: “Seal a file” + “Verify a bundle”
+
+Step 3.2 — Feature set (only what exists)
+
+Client-side hashing (state clearly: “file not uploaded” if true)
+
+Signed seal object (what fields it contains)
+
+Evidence bundle ZIP output
+
+Offline verifier (CLI or GUI)
+
+Tamper detection
+
+Step 3.3 — Proof section (must exist)
+
+Download a sample bundle.zip
+
+Show the verifier output screenshot
+
+Show the tamper test screenshot
+
+Step 3.4 — Pricing hook
+
+Free tier: X seals/month
+
+Pro tier: X seals/month + VerifiedBundle download + vault history
+
+Enterprise: “license + on-prem verifier + signing controls”
+
+4) AGA page (/aga) and /logina
+
+AGA needs to feel enterprise-grade and specific.
+
+Step 4.1 — AGA landing (/aga)
+
+Headline: “Runtime governance you can verify.”
+
+Subheadline: “A deployable sentinel that measures declared integrity, enforces actions, and exports offline-verifiable evidence.”
+
+CTA: “Open Portal” / “Request evaluation”
+
+Step 4.2 — Explain Sentinel in plain English
+
+“Sentinel is a small program you run next to your system. It checks if critical files/configs changed. If they did, it takes the action you pre-approved and writes proof.”
+
+Step 4.3 — Hard proof assets
+
+Show the receipt chain format
+
+Show bundle structure
+
+Show the deterministic offline verifier PASS/FAIL output
+
+Step 4.4 — /logina refinement
+
+Only magic link login (unless you have passwords)
+
+Add:
+
+“What you can do after login” (3 bullets)
+
+“What we never store” (1 line)
+
+Support link
+
+5) Docs (/docs) — minimal, but real
+
+Docs must be short and executable.
+
+Required pages:
+
+Quickstart
+
+Seal → Export bundle → Verify offline → Tamper test
+
+Bundle format
+
+File tree + what each file proves
+
+Verifier
+
+Commands + output schema + error codes
+
+Threat model
+
+What you protect against / what you don’t
+
+No long essays. You’re selling clarity.
+
+6) Trust page (/trust)
+
+This is where you win defense/enterprise confidence.
+
+Include:
+
+Cryptography: SHA-256, Ed25519 (and why)
+
+Deterministic canonicalization rules
+
+Offline verification model
+
+Key custody options (customer-held vs managed)
+
+Tamper scenarios and detection guarantees
+
+Roadmap: Merkle batching + anchoring (clearly labeled “Phase 2”)
+
+7) Visual + UI system (must be consistent)
+
+Background: near-black (#0A0E17)
+
+One accent: cyan (#00D4FF)
+
+One neutral: tungsten (#B8C4CE)
+
+Typography: modern neutral sans (Inter / IBM Plex Sans)
+
+Components:
+
+Card system
+
+Monospace blocks for hashes
+
+“Proof output” terminal panel style
+
+Avoid sci-fi. Avoid “glow haze.”
+
+8) SEO + structure checklist (fast wins)
+
+For every page:
+
+One H1 only
+
+One crisp meta title + meta description
+
+FAQ section (3–6 questions) with schema markup
+
+OpenGraph image (same style everywhere)
+
+Fast load (optimize hero image)
+
+Core keywords to place naturally:
+
+software attestation
+
+offline verification
+
+tamper-evident evidence
+
+integrity monitoring
+
+evidence bundle
+
+9) Conversion system (what makes it a business)
+
+Add these to Home + product pages:
+
+“Download sample bundle” (zero friction)
+
+“Run verifier now” (web demo if possible)
+
+“Request evaluation” (enterprise)
+
+Email capture: “Get the offline verifier + bundle spec”
+
+10) Execution order (so you don’t thrash)
+
+Lock sitemap + nav
+
+Build Home (2 CTAs, hero, how-it-works, path split)
+
+Build /verifiedbundle with sample bundle + proof outputs
+
+Build /aga and refine /logina
+
+Add /docs and /trust
+
+Add /pricing and /contact
+
+Add SEO + OG images
+
+Final pass: mobile spacing, typography, contrast, performance
