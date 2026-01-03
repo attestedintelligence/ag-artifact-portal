@@ -107,7 +107,7 @@ export const CRYPTO_STANDARDS = [
 
 export const SITE_CONFIG = {
   name: 'Attested Intelligence',
-  tagline: 'Prove software integrity. Verify it offline.',
+  tagline: 'Prove integrity. Verify it offline.',
   description: 'Create tamper-evident proof that a file or system stayed unchanged—and export a bundle anyone can verify air-gapped.',
   shortDescription: 'Seal files. Prove integrity. Verify offline.',
   domain: 'attestedintelligence.com',
