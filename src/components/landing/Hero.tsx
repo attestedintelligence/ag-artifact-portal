@@ -123,10 +123,11 @@ export function Hero() {
         {/* Main Headline */}
         <div className="text-center mb-10 sm:mb-12">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight tracking-tight"
+            className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight tracking-tight"
             style={{ color: COLORS.textPrimary }}
           >
-            {SITE_CONFIG.tagline}
+            <span className="block sm:inline">Prove integrity.</span>{' '}
+            <span className="block sm:inline">Verify it offline.</span>
           </h1>
           <p
             className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed px-4"
