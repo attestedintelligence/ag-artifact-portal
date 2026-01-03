@@ -116,21 +116,27 @@ export function Nav() {
               {/* Products */}
               <div>
                 <div
-                  className="text-xs font-medium uppercase tracking-wider mb-2"
+                  className="text-xs font-medium uppercase tracking-wider mb-3"
                   style={{ color: COLORS.textDim }}
                 >
                   Products
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-4">
                   {NAV_LINKS.products.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="block py-2 text-sm"
-                      style={{ color: COLORS.textSecondary }}
+                      className="block py-3 px-4 rounded-lg text-center"
+                      style={{ backgroundColor: COLORS.surface }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      {item.label}
+                      <div className="font-medium mb-1" style={{ color: COLORS.textPrimary }}>
+                        {item.label}
+                      </div>
+                      <div className="text-xs" style={{ color: COLORS.textMuted }}>
+                        <div>{item.description}</div>
+                        {'description2' in item && <div>{item.description2}</div>}
+                      </div>
                     </Link>
                   ))}
                 </div>

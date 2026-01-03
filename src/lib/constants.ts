@@ -54,8 +54,8 @@ export const COLORS = {
 
 export const NAV_LINKS = {
   products: [
-    { label: 'VerifiedBundle', href: '/verifiedbundle', description: 'Seal any file with cryptographic proof' },
-    { label: 'AGA Portal', href: '/aga', description: 'Runtime governance for agents' },
+    { label: 'VerifiedBundle', href: '/verifiedbundle', description: 'Seal any file.', description2: 'Verify and prove it later.' },
+    { label: 'AGA Portal', href: '/aga', description: 'Runtime governance', description2: 'for autonomous agents.' },
   ],
   resources: [
     { label: 'Documentation', href: '/docs' },
